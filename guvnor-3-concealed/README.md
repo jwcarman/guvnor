@@ -1,6 +1,10 @@
 # Lesson 3 — Concealed
 
 > **The belief this corrects:** if PII never reaches the LLM, I have solved this.
+>
+> *This lesson is about data protection, and it is worth reading even if prompt injection did not
+> exist. It does not mitigate injection, and does not claim to — that is [lesson
+> 4](../guvnor-4-quarantined), which uses the same machinery pointed at a different question.*
 
 *Part 3 of Guvnor, a seven-part series on what it takes to let a language model act on untrusted
 input without letting untrusted input act through it. Everything below runs; the code is in this

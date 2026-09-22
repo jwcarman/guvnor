@@ -18,53 +18,50 @@ package org.jwcarman.guvnor.quarantined;
 import java.util.stream.Collectors;
 import org.jwcarman.guvnor.domain.billing.Charge;
 import org.jwcarman.guvnor.domain.billing.ChargeService;
+import org.jwcarman.guvnor.domain.billing.Money;
 import org.jwcarman.guvnor.domain.correspondence.Message;
 import org.jwcarman.guvnor.domain.correspondence.MessageId;
 import org.jwcarman.guvnor.domain.correspondence.MessageService;
 import org.jwcarman.loch.Conceal;
-import org.jwcarman.loch.Derivation;
-import org.jwcarman.loch.Reveal;
-import org.jwcarman.loch.Revealed;
 import org.jwcarman.loch.Surrogate;
 import org.jwcarman.nessy.api.Harness;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * Hands an email to the agent, without ever holding it.
+ * Hands the agent what the quarantine extracted, and never the email.
  *
- * <p>The body is read once, at the edge, and immediately concealed. From that line on it is a
- * {@link Surrogate} -- a reference that can be passed around, logged, stored and compared, and that
- * cannot be read without naming where it is going.
+ * <p>This is the half of lesson 4 that lesson 3 could not do. Compare what gets built here against
+ * lessons 1 to 3, where the customer's words were concatenated into the prompt and the model was
+ * asked to be sensible about them.
  *
- * <p>Nothing here decides what the model may see. The charter does, and it refuses.
+ * <p>The privileged agent -- the one holding tools that move money -- is given two fields: a kind,
+ * which is an enum with four possible answers, and an amount, which has already been parsed into
+ * {@code Money} or rejected. There is nowhere in that for a sentence to hide, so there is nothing
+ * for an instruction to arrive in.
+ *
+ * <p>The quarantined model read the email and may well have been fooled by it. That is allowed. It
+ * had no tools.
  */
 @Component
 public class DeskAgent {
-
-  private static final Logger LOG = LoggerFactory.getLogger("desk");
 
   private final Harness<String> harness;
   private final MessageService messages;
   private final ChargeService charges;
   private final Conceal<String> inbound;
-  private final Derivation<String, String> redacted;
-  private final Reveal<String> model;
+  private final Quarantine quarantine;
 
   public DeskAgent(
       Harness<String> harness,
       MessageService messages,
       ChargeService charges,
       Conceal<String> inbound,
-      Derivation<String, String> redacted,
-      Reveal<String> model) {
+      Quarantine quarantine) {
     this.harness = harness;
     this.messages = messages;
     this.charges = charges;
     this.inbound = inbound;
-    this.redacted = redacted;
-    this.model = model;
+    this.quarantine = quarantine;
   }
 
   public void handle(MessageId id) {
@@ -73,17 +70,9 @@ public class DeskAgent {
     // The last moment this application holds what the customer wrote.
     Surrogate<String> mail = inbound.conceal(messages.body(id).orElse(""));
 
-    // What a careless version of this class would try, and what stops it. Nothing was
-    // sanitised, so the mail is still labelled cardholder, and the model's door does not
-    // admit cardholder data. This is not a check somebody wrote; it is the door.
-    Revealed<String> straightToTheModel = model.reveal(mail);
-    if (straightToTheModel instanceof Revealed.Denied<String>(var reason, var detail)) {
-      LOG.info("the model may not read the mail as it arrived: {} -- {}", reason, detail);
-    }
-
-    // The one declared route from cardholder to personal, by name.
-    Surrogate<String> safe = redacted.derive(mail).orThrow();
-    String forTheModel = model.reveal(safe).orThrow();
+    // Read behind glass, by a model with nothing to act with.
+    Request request = quarantine.read(mail);
+    Money amount = Quarantine.amountOf(request);
 
     String context =
         charges.forAccount(message.from()).stream()
@@ -91,12 +80,17 @@ public class DeskAgent {
             .map(chargeId -> "charge " + chargeId)
             .collect(Collectors.joining(", "));
 
+    // Two fields and an account. Note what is absent: every word the customer wrote.
     harness.observe(
         Desk.forMessage(id),
         """
         A customer has written in. They are account %s. On their account: %s.
 
-        %s"""
-            .formatted(message.from(), context.isEmpty() ? "no charges" : context, forTheModel));
+        What they appear to be asking for: %s of %s."""
+            .formatted(
+                message.from(),
+                context.isEmpty() ? "no charges" : context,
+                request.kind(),
+                amount));
   }
 }

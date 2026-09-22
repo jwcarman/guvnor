@@ -45,6 +45,35 @@ Read [Lesson 0](guvnor-0-desk) even though nothing happens in it, because *why* 
 the reframe the rest depends on. If you only run one, run [Lesson 1](guvnor-1-naive) and watch the
 log.
 
+## One mechanism, two problems
+
+Halfway through the series the same machinery gets pointed at a second problem, and it is worth
+saying up front, because it is the idea the whole path is built on.
+
+A value carries a label. A door carries a ceiling. A read is refused when the label is above the
+ceiling. That is all of it — and what it *means* depends entirely on what you decided to ask about
+the value.
+
+**Ask "how sensitive is this?" and you get data protection.** Mail is labelled cardholder data
+because of the channel it arrived on, not because a rule spotted a card in it. The model's door
+admits nothing above personal. So the mail cannot reach a third party that keeps what it is shown,
+and the one place that can declassify it is named, declared and auditable. This is lesson 3, and it
+would be worth doing if prompt injection did not exist.
+
+**Ask "how much is this to be believed?" and you get injection mitigation.** A claim a model
+extracted from a stranger's email is labelled unendorsed, because of where it came from. The
+authority that moves money admits only endorsed. So no amount of persuasion reaches it, and the one
+bridge from unendorsed to endorsed earns its answer from the billing system rather than from
+anybody's confidence. This is lesson 4.
+
+Two different threats. One reader that keeps what it sees; one writer that cannot be vouched for.
+Different lessons, different axes — and the same doors, the same ceilings, the same refusals.
+
+That is why the labels have *axes* rather than a single level. They are independent questions about
+one value, and a door can be strict about one and indifferent to the other. Lesson 4's quarantined
+model is exactly that: its door admits **any** integrity, because reading untrusted text is its
+whole job, and at most **personal** sensitivity, because it is still a third party.
+
 ## guvnor-domain
 
 The billing support desk. Every lesson shares it and none of them change it: the domain, the
