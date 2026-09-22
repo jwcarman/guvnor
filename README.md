@@ -146,6 +146,12 @@ NESSY_MODEL=qwen/qwen3.6-35b-a3b \
 Pick a model that supports tool calling; one that cannot call a tool will read the email, answer
 politely, and prove nothing.
 
+If you see `model returned an empty answer (finish_reason=length)` and a failed turn, the model
+spent its whole token budget thinking. Every lesson asks for 4096 output tokens, which is enough
+for the reasoning models this was tested against; raise it in that lesson's `DeskConfiguration` if
+yours needs more. It is an operational setting, not a governance one, and nothing in any lesson
+turns on it.
+
 ### What you should see
 
 From lesson 1 on, **the demonstration happens at startup**. The mailroom delivers the two scenario

@@ -48,6 +48,12 @@ public class DeskConfiguration {
             config
                 .agentType(Desk.TYPE)
                 .systemPrompt(Desk.SYSTEM_PROMPT)
+                // Reasoning models spend tokens thinking before they say anything, and a
+                // budget that only covers the thinking comes back as an empty answer with
+                // finish_reason=length -- which the engine reports, correctly, as a failed
+                // turn. Nothing to do with governance; everything to do with running this
+                // against a local model.
+                .inference(in -> in.maxTokens(4096))
                 .tool(new RefundTool(refunds))
                 .tool(new IssueCreditTool(credits, proposed, confirmed, authority)));
   }
