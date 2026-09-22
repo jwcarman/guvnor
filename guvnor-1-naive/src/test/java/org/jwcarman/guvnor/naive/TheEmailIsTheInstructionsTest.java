@@ -67,26 +67,14 @@ class TheEmailIsTheInstructionsTest {
 
   @Test
   void contains_the_customers_words_verbatim() throws Exception {
-    http.perform(post("/mail").param("subject", "Refund request").param("body", Scenario.INJECTED));
-
-    RecordingProvider probe = (RecordingProvider) provider;
-    await()
-        .atMost(Duration.ofSeconds(30))
-        .untilAsserted(() -> assertThat(probe.lastPrompt()).isNotNull());
-
-    assertThat(probe.lastPrompt()).contains(Scenario.INJECTED);
+    assertThat(promptFor("A one-off", "please look at charge 12"))
+        .contains("please look at charge 12");
   }
 
   @Test
   void puts_them_in_the_same_channel_as_its_own() throws Exception {
-    http.perform(post("/mail").param("subject", "Refund request").param("body", Scenario.INJECTED));
+    String prompt = promptFor("Refund request", Scenario.INJECTED);
 
-    RecordingProvider probe = (RecordingProvider) provider;
-    await()
-        .atMost(Duration.ofSeconds(30))
-        .untilAsserted(() -> assertThat(probe.lastPrompt()).isNotNull());
-
-    String prompt = probe.lastPrompt();
     assertThat(prompt)
         .as("the desk's framing and the stranger's instruction, in one string")
         .contains("A customer has written in")
@@ -95,14 +83,24 @@ class TheEmailIsTheInstructionsTest {
 
   @Test
   void carries_the_card_number_too() throws Exception {
-    http.perform(
-        post("/mail").param("subject", "Duplicate charge").param("body", Scenario.GENUINE));
+    assertThat(promptFor("Duplicate charge", Scenario.GENUINE)).contains("4111111111114821");
+  }
 
+  /**
+   * Posts one email and returns the prompt the desk built from it.
+   *
+   * <p>Counts from where the probe already was: the mailroom hands the desk both scenario emails at
+   * startup, so the interesting prompt is never the first one.
+   */
+  private String promptFor(String subject, String body) throws Exception {
     RecordingProvider probe = (RecordingProvider) provider;
+    int before = probe.seen();
+
+    http.perform(post("/mail").param("subject", subject).param("body", body));
     await()
         .atMost(Duration.ofSeconds(30))
-        .untilAsserted(() -> assertThat(probe.lastPrompt()).isNotNull());
+        .untilAsserted(() -> assertThat(probe.seen()).isGreaterThan(before));
 
-    assertThat(probe.lastPrompt()).contains("4111111111114821");
+    return probe.prompts().get(before);
   }
 }

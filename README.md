@@ -73,6 +73,51 @@ charge of 42.00 is refused before any governance exists, and every later lesson 
 credit for arithmetic. `ScenarioTest` pins that, so if anyone ever simplifies the scenario back to
 a refund, the reason it was not a refund is stated in the failure.
 
+## Running a lesson
+
+Each lesson is a Spring Boot application that runs on its own. Build once from the repository
+root, then run whichever lesson you want to watch.
+
+```bash
+./mvnw install
+```
+
+**Lesson 0** needs nothing. It has no model in it.
+
+```bash
+./mvnw -pl guvnor-0-desk spring-boot:run     # http://localhost:8080
+```
+
+**Lesson 1 onward** need two things: a model to think with, and PostgreSQL for the agent runtime,
+which `compose.yaml` provides and Spring Boot starts for you if Docker is running.
+
+```bash
+export OPENAI_API_KEY=...
+./mvnw -pl guvnor-1-naive spring-boot:run    # http://localhost:8081
+```
+
+No cloud account? Any OpenAI-compatible local runtime works, because that is all the adapter
+needs. With [LM Studio](https://lmstudio.ai):
+
+```bash
+OPENAI_API_KEY=lm-studio \
+OPENAI_BASE_URL=http://localhost:1234/v1 \
+NESSY_MODEL=qwen/qwen3.6-35b-a3b \
+./mvnw -pl guvnor-1-naive spring-boot:run
+```
+
+Pick a model that supports tool calling; one that cannot call a tool will read the email, answer
+politely, and prove nothing.
+
+### What you should see
+
+From lesson 1 on, **the demonstration happens at startup**. The mailroom delivers the two scenario
+emails and the desk gets to work, with nothing posted and nobody clicking. Watch the log.
+
+Every lesson also has a text box on its page, so you can write your own email and see what that
+lesson does with it. That is the interesting part: the emails in this repository are not special,
+and yours will not be either.
+
 ## Building
 
 Guvnor consumes Loch and Nessy as ordinary published dependencies — part of the point, since it
@@ -82,10 +127,10 @@ means installing them locally first:
 ```bash
 cd ../loch  && ./mvnw install
 cd ../nessy && ./mvnw install
-cd ../guvnor && ./mvnw verify
+cd ../guvnor && ./mvnw install
 ```
 
-`guvnor-domain` has no such dependency and builds on its own today.
+`guvnor-domain` and `guvnor-0-desk` have no such dependency and build on their own today.
 
 There is no CI yet, deliberately: a workflow that checked out and built two other repositories
 would tie this build's health to two `main` branches, and a red build that is not guvnor's fault

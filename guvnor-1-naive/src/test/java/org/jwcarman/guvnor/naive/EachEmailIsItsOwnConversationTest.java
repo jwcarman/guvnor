@@ -71,18 +71,20 @@ class EachEmailIsItsOwnConversationTest {
   @Test
   void is_handled_without_the_previous_one_in_the_context() throws Exception {
     RecordingProvider probe = (RecordingProvider) provider;
+    int before = probe.seen();
 
     http.perform(post("/mail").param("subject", "One").param("body", Scenario.INJECTED));
     await()
         .atMost(Duration.ofSeconds(30))
-        .untilAsserted(() -> assertThat(probe.prompts()).hasSize(1));
+        .untilAsserted(() -> assertThat(probe.seen()).isGreaterThan(before));
 
+    int afterFirst = probe.seen();
     http.perform(post("/mail").param("subject", "Two").param("body", Scenario.GENUINE));
     await()
         .atMost(Duration.ofSeconds(30))
-        .untilAsserted(() -> assertThat(probe.prompts()).hasSize(2));
+        .untilAsserted(() -> assertThat(probe.seen()).isGreaterThan(afterFirst));
 
-    String second = probe.prompts().get(1);
+    String second = probe.prompts().get(afterFirst);
     assertThat(second).contains(Scenario.GENUINE);
     assertThat(second)
         .as("the first email's instructions must not still be in the room")

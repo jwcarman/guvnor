@@ -62,4 +62,14 @@ public final class RecordingProvider implements InferenceProvider {
   public List<String> prompts() {
     return List.copyOf(prompts);
   }
+
+  /**
+   * How many prompts have arrived so far.
+   *
+   * <p>Needed because the desk starts working the moment it boots: the mailroom hands it both
+   * scenario emails, so a test that posts a third must say which prompts are its own.
+   */
+  public int seen() {
+    return prompts.size();
+  }
 }
