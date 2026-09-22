@@ -23,6 +23,7 @@ import org.jwcarman.guvnor.domain.correspondence.MessageService;
 import org.jwcarman.guvnor.domain.desk.DeskController;
 import org.jwcarman.guvnor.domain.desk.Mailroom;
 import org.jwcarman.guvnor.domain.disputes.DisputeService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
@@ -105,7 +106,10 @@ public class DomainConfiguration {
   @Bean
   @ConditionalOnMissingBean
   public DeskController deskController(
-      MessageService messages, DisputeService disputes, LedgerService ledger) {
-    return new DeskController(messages, disputes, ledger);
+      MessageService messages,
+      DisputeService disputes,
+      LedgerService ledger,
+      @Value("${guvnor.lesson:}") String lesson) {
+    return new DeskController(messages, disputes, ledger, lesson);
   }
 }

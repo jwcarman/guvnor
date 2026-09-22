@@ -52,6 +52,7 @@
     <module>guvnor-1-naive</module>
     <module>guvnor-2-careful</module>
     <module>guvnor-3-concealed</module>
+    <module>guvnor-4-quarantined</module>
   </modules>
 
   <properties>

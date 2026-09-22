@@ -46,10 +46,15 @@ public class DeskController {
   private final DisputeService disputes;
   private final LedgerService ledger;
 
-  public DeskController(MessageService messages, DisputeService disputes, LedgerService ledger) {
+  /** A line of prose naming which lesson this is, so a reader knows what they are looking at. */
+  private final String lesson;
+
+  public DeskController(
+      MessageService messages, DisputeService disputes, LedgerService ledger, String lesson) {
     this.messages = messages;
     this.disputes = disputes;
     this.ledger = ledger;
+    this.lesson = lesson;
   }
 
   @GetMapping("/")
@@ -61,7 +66,8 @@ public class DeskController {
     model.addAttribute(
         "everything",
         ledger.entries().stream().map(entry -> entry.amount()).reduce(Money.usd(0L), Money::plus));
-    return "inbox";
+    model.addAttribute("lesson", lesson);
+    return "desk";
   }
 
   /**
