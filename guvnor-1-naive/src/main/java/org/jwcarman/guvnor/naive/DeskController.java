@@ -55,6 +55,13 @@ public class DeskController {
     model.addAttribute("messages", messages.inbox());
     model.addAttribute("entries", ledger.entries());
     model.addAttribute("credited", ledger.creditedTo(Scenario.CUSTOMER, Money.usd(0L)));
+    // Everything that left, whoever it went to. The per-customer figure above answers a
+    // different question, and the gap between them is worth seeing: an agent that credits an
+    // account nobody wrote in from still moved real money.
+    model.addAttribute(
+        "everything",
+        ledger.entries().stream().map(e -> e.amount()).reduce(Money.usd(0L), Money::plus));
+    model.addAttribute("customer", Scenario.CUSTOMER);
     return "inbox";
   }
 

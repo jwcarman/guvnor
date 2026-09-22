@@ -39,7 +39,7 @@ public final class IssueCreditTool implements Tool<IssueCreditTool.Input> {
 
   public record Input(
       @JsonPropertyDescription("The account to credit") String account,
-      @JsonPropertyDescription("How much to credit, in cents") long cents,
+      @JsonPropertyDescription("How much to credit, in dollars, like 42.00") Money amount,
       @JsonPropertyDescription("Why this credit is being issued") String reason) {}
 
   private final CreditService credits;
@@ -66,14 +66,17 @@ public final class IssueCreditTool implements Tool<IssueCreditTool.Input> {
   @Override
   public Awaited<ToolResult> call(ToolCallRequest<Input> request) {
     Input input = request.input();
+    if (input.amount() == null) {
+      return Awaited.ready(new ToolResult.Failure("no amount was given; say it like 42.00"));
+    }
     try {
       Credit credit =
           credits.issue(
-              new AccountId(UUID.fromString(input.account())),
-              Money.usd(input.cents()),
-              input.reason());
+              new AccountId(UUID.fromString(input.account())), input.amount(), input.reason());
       return Awaited.ready(ToolResult.ok(new Block.Text("Credited " + credit.amount())));
     } catch (IllegalArgumentException malformed) {
+      // A failure rather than an exception: the model can read this and try again with a better
+      // argument, which is what ToolResult.Failure is for.
       return Awaited.ready(new ToolResult.Failure(malformed.getMessage()));
     }
   }

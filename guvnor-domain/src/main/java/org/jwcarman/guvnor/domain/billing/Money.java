@@ -15,6 +15,10 @@
  */
 package org.jwcarman.guvnor.domain.billing;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Currency;
 import java.util.Locale;
 import java.util.Objects;
@@ -29,6 +33,45 @@ public record Money(long minorUnits, Currency currency) implements Comparable<Mo
 
   public Money {
     Objects.requireNonNull(currency, "money has a currency");
+  }
+
+  /**
+   * How much this is, in whole currency units: 999.00 rather than 99900.
+   *
+   * <p>The JSON form on purpose. Everything that reads or writes money here -- a person, a page, a
+   * model -- writes it the way it appears on a statement, and a type that serialises as its
+   * internal representation asks every one of them to convert. Asking a language model to convert
+   * is asking it to be wrong occasionally, which it duly was: the first version of the desk's tools
+   * took a primitive number of cents and a model sent nothing at all for it.
+   */
+  @JsonValue
+  public BigDecimal toDollars() {
+    return BigDecimal.valueOf(minorUnits, 2);
+  }
+
+  /**
+   * Money, from whatever was written where an amount belonged.
+   *
+   * <p>Takes text rather than a number so that a dollar sign, a thousands separator or a missing
+   * decimal is a readable refusal instead of a deserialisation error the caller never sees. What
+   * arrives here came from outside, and the useful failure is one that can be handed back.
+   */
+  @JsonCreator
+  public static Money fromDollars(String written) {
+    if (written == null || written.isBlank()) {
+      throw new IllegalArgumentException("no amount was given; write it in dollars, like 42.00");
+    }
+    String cleaned = written.strip().replace("$", "").replace(",", "");
+    try {
+      return usd(
+          new BigDecimal(cleaned)
+              .movePointRight(2)
+              .setScale(0, RoundingMode.HALF_UP)
+              .longValueExact());
+    } catch (ArithmeticException | NumberFormatException notAnAmount) {
+      throw new IllegalArgumentException(
+          "'" + written + "' is not an amount of dollars, like 42.00");
+    }
   }
 
   public static Money of(long minorUnits, Currency currency) {

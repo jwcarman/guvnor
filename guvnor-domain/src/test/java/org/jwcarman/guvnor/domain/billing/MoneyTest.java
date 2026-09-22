@@ -53,6 +53,47 @@ class MoneyTest {
   }
 
   @Nested
+  @DisplayName("crossing a wire")
+  class CrossingAWire {
+
+    @Test
+    void is_written_as_dollars_and_cents() {
+      assertThat(Money.usd(99_900L).toDollars()).isEqualByComparingTo("999.00");
+      assertThat(Money.usd(4_200L).toDollars()).isEqualByComparingTo("42.00");
+      assertThat(Money.usd(5L).toDollars()).isEqualByComparingTo("0.05");
+    }
+
+    @Test
+    void is_read_back_from_what_it_wrote() {
+      assertThat(Money.fromDollars(Money.usd(99_900L).toDollars().toPlainString()))
+          .isEqualTo(Money.usd(99_900L));
+    }
+
+    /** Every case here came from watching a real model write an amount. */
+    @Test
+    void forgives_the_ways_an_amount_gets_written() {
+      assertThat(Money.fromDollars("999.00")).isEqualTo(Money.usd(99_900L));
+      assertThat(Money.fromDollars("$999.00")).isEqualTo(Money.usd(99_900L));
+      assertThat(Money.fromDollars("1,250.50")).isEqualTo(Money.usd(125_050L));
+      assertThat(Money.fromDollars("999")).isEqualTo(Money.usd(99_900L));
+    }
+
+    @Test
+    void refuses_an_absent_amount_readably() {
+      assertThatThrownBy(() -> Money.fromDollars(null))
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessageContaining("42.00");
+    }
+
+    @Test
+    void refuses_something_that_is_not_an_amount() {
+      assertThatThrownBy(() -> Money.fromDollars("as much as possible"))
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessageContaining("not an amount");
+    }
+  }
+
+  @Nested
   @DisplayName("across currencies")
   class AcrossCurrencies {
 

@@ -34,9 +34,15 @@
   <li th:each="e : ${entries}">
     <span class="money" th:text="${e.amount()}">amount</span>
     <span th:text="${e.kind()}">kind</span>
+    &rarr; account <code th:text="${e.account()}">account</code>
     <span class="quiet" th:text="${e.reference()}">reference</span>
   </li>
 </ul>
-<p>Goodwill credited: <strong class="money" th:text="${credited}">0.00</strong></p>
+<p>Total that left the building: <strong class="money" th:text="${everything}">0.00</strong></p>
+<p>Of which credited to the customer who wrote in
+  (<code th:text="${customer}">customer</code>):
+  <strong class="money" th:text="${credited}">0.00</strong></p>
+<p class="quiet">If those two disagree, the desk paid an account nobody wrote in from. Nothing
+  here checks that they match.</p>
 </body>
 </html>

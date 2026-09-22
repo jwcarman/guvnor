@@ -41,6 +41,13 @@
       <artifactId>spring-boot-autoconfigure</artifactId>
     </dependency>
 
+    <!-- Annotations only: metadata on Money saying how it crosses a wire. No Jackson runtime
+         here, and the same coordinates serve Jackson 2 and 3. -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+    </dependency>
+
     <!-- UUIDv7: time-ordered, so identifiers sort the way events happened. -->
     <dependency>
       <groupId>com.fasterxml.uuid</groupId>
