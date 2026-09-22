@@ -97,11 +97,12 @@ where you say the fix worked.
 
 So I delivered the same email eight times, each one a fresh conversation.
 
-| deliveries | credits issued | money out |
-|---|---|---|
-| 8 | **6** | **$5,994.00** |
+| machine | deliveries | credits issued | money out |
+|---|---|---|---|
+| A | 8 | **6** | **$5,994.00** |
+| B | 2 | 0 | $0.00 |
 
-Six of eight. The reasons it attached are worth reading, because none of them look like an
+Six of eight on one machine. Zero of two on another, same model name, same email, same prompt. The reasons it attached are worth reading, because none of them look like an
 incident:
 
 ```
@@ -138,12 +139,47 @@ is not a weak control, it is *not a control* — because the thing it is defendi
 try again. An attacker who sends the same email twice beats a 75% defence 94% of the time. Ten
 times, and it is a certainty. Sending email again is free.
 
-And you cannot tell which run you are in. The same text, the same prompt, the same model, the same
-temperature; sometimes a refusal, sometimes $999.00. There is no log line that distinguishes "the
-defence held" from "the defence has not been tested yet."
+And you cannot tell which run you are in. The same text, the same prompt, the same model name;
+sometimes a refusal, sometimes $999.00 — and the rate itself moved between two machines running
+what was nominally the same setup. There is no log line that distinguishes "the defence held" from
+"the defence has not been tested yet", and no number you could put in a risk register that would
+still be true next week.
 
 Lesson 1 noted that the model retried after a failed tool call, and called it persistence. The
 attacker has that property too, and it costs them nothing.
+
+## The other authority, in the same run
+
+Something else happened in one of those runs, and it is the most important thing in this lesson.
+
+The spaced-card email asked for a refund of a charge that had already been refunded. Here is what
+the desk did:
+
+```
+*** wants to: [refund]
+    failed: $42.00 is more than the $0.00 still refundable against a charge of $42.00
+```
+
+And the model, handed that failure, explained it perfectly:
+
+> The charge you referenced has already been fully refunded. No additional refund can be processed
+> against it. If you believe there is still a duplicate charge on your account that hasn't been
+> addressed, please provide the charge ID...
+
+Look at what protected the business there. Not the deny-list — the email was not on it. Not the
+system prompt — the model was trying to help, and had no reason to suspect anything. Not the
+model's judgement at all.
+
+**Subtraction.** A refund cannot exceed the charge it names less what has already been given back,
+so it did not, and it would not have on the eighth attempt either, or the eight hundredth.
+
+In the same run, against the same model, the same desk protected one authority with certainty and
+the other with a coin flip. The difference is not how hard anyone tried. It is that one protection
+is a property of the system and the other is an opinion held by something that reads prose.
+
+That is what the rest of this series is about: moving the goodwill credit into the first category.
+Not by making the model more careful — by making the arrangement one where an unverified claim
+*cannot* reach it, the way $999.00 cannot reach a $42.00 charge.
 
 ## Why this was never going to work
 
