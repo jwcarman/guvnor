@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <title th:text="${message.subject()}">Message</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 46rem; margin: 3rem auto; padding: 0 1rem; }
+    pre { background: #f5f5f5; padding: 1rem; white-space: pre-wrap; border-left: 3px solid #ccc; }
+    form { display: inline-block; margin-right: 1.5rem; }
+    .said { background: #fffbe6; padding: .6rem 1rem; border-left: 3px solid #e6c000; }
+    .quiet { color: #666; }
+  </style>
+</head>
+<body>
+<p><a href="/">&larr; Inbox</a></p>
+<h1 th:text="${message.subject()}">subject</h1>
+
+<p class="said" th:if="${said}" th:text="${said}">outcome</p>
+
+<h2>What the customer wrote</h2>
+<pre th:text="${body}">body</pre>
+<p class="quiet">You just read that. The application did not.</p>
+
+<h2>Refund a charge</h2>
+<p class="quiet" th:if="${charges.isEmpty()}">No charges on this account.</p>
+<form th:each="c : ${charges}" method="post" th:action="@{'/mail/' + ${message.id()} + '/refund'}">
+  <input type="hidden" name="charge" th:value="${c.id()}">
+  <span th:text="${c.descriptor() + ' ' + c.amount()}">charge</span>
+  <input type="number" name="pence" th:value="${c.amount().minorUnits()}">
+  <button type="submit">Refund</button>
+</form>
+
+<h2>Issue a goodwill credit</h2>
+<form method="post" th:action="@{'/mail/' + ${message.id()} + '/credit'}">
+  <input type="hidden" name="account" th:value="${message.from()}">
+  <input type="number" name="pence" value="500">
+  <input type="text" name="reason" value="goodwill" size="30">
+  <button type="submit">Credit</button>
+</form>
+<p class="quiet">Nothing in the billing system bounds this one.</p>
+</body>
+</html>

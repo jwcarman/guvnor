@@ -21,7 +21,7 @@ Each lesson is named for the belief it corrects.
 
 | | belief it corrects | status |
 |---|---|---|
-| **0 — desk** | Language models introduced a security problem. | not built |
+| [**0 — desk**](guvnor-0-desk) | Language models introduced a security problem. | built |
 | **1 — naive** | A model is a tool I call. | not built |
 | **2 — careful** | I can clean the input. | not built |
 | **3 — concealed** | If PII never reaches the LLM, I have solved this. | not built |

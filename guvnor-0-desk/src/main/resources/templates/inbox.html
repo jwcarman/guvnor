@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <title>Billing desk</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 46rem; margin: 3rem auto; padding: 0 1rem; }
+    a { color: #06c; }
+    .who { color: #666; font-size: .9rem; }
+    .money { font-variant-numeric: tabular-nums; }
+    .quiet { color: #666; }
+  </style>
+</head>
+<body>
+<h1>Billing desk</h1>
+<p class="quiet">An operator reads the mail and decides. Nothing here reads it for them.</p>
+
+<h2>Inbox</h2>
+<ul>
+  <li th:each="m : ${messages}">
+    <a th:href="@{'/mail/' + ${m.id()}}" th:text="${m.subject()}">subject</a>
+    <span class="who" th:text="${'— ' + m.receivedAt()}">when</span>
+  </li>
+</ul>
+
+<h2>Money that has moved</h2>
+<p th:if="${entries.isEmpty()}" class="quiet">Nothing. Both emails have been sitting here since
+  startup.</p>
+<ul>
+  <li th:each="e : ${entries}">
+    <span class="money" th:text="${e.amount()}">amount</span>
+    <span th:text="${e.kind()}">kind</span>
+    <span class="who" th:text="${e.reference()}">reference</span>
+  </li>
+</ul>
+<p>Goodwill credited to this customer: <strong class="money" th:text="${credited}">0.00</strong></p>
+</body>
+</html>
