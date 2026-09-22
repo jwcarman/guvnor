@@ -69,7 +69,7 @@ desk : the model may not read the mail as it arrived:
        ABOVE_CEILING -- sur_01a0ca22-181f-… may not reach 'support-model'
 ```
 
-Four emails, four refusals, before a model is asked anything.
+Every email, refused, before a model is asked anything.
 
 Nothing inspected the text. There is no rule that could be outdated, no list that needed a new
 entry, and no difference in treatment between an email containing a card and one saying *"thanks
@@ -234,8 +234,9 @@ NESSY_MODEL=qwen/qwen3.6-35b-a3b \
 ./mvnw -pl guvnor-3-concealed spring-boot:run
 ```
 
-Watch for the `ABOVE_CEILING` lines at startup. They arrive before any model is asked anything,
-which is the difference between this lesson and the last one.
+Send anything at all and watch for the `ABOVE_CEILING` line. It arrives before the model is asked
+anything, and it arrives for every email including harmless ones, which is the difference between
+this lesson and the last one.
 
 ## What is in here
 

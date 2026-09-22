@@ -11,9 +11,9 @@ directory.*
 ## One line
 
 [Lesson 0](../guvnor-0-desk) was a billing support desk with a person at it. Mail arrived, they
-read it, they decided. Two emails sat in the inbox — one genuine, one a prompt injection demanding
-a $999.00 goodwill credit — and neither of them did anything, because the only path from an email
-to an authority ran through somebody who does not take instructions from their correspondence.
+read it, they decided. Two emails were delivered to it — one genuine, one a prompt injection demanding a $999.00
+goodwill credit — and neither of them did anything, because the only path from an email to an
+authority ran through somebody who does not take instructions from their correspondence.
 
 This module is that desk with an agent at it instead. Here is the entire difference:
 
@@ -26,8 +26,8 @@ desk.handle(arrived.id());                    // <- lesson 1
 Nobody removed a safeguard, because lesson 0 had none to remove. Nothing was weakened. A capable
 reader was added to a system that had been getting by without one.
 
-Start it up. The mailroom delivers the same two emails, the desk gets to work, and this is the log —
-a real run against a local Qwen3.6-35B, no cloud account involved:
+Start it up, send the genuine email from the page, and this is the log — a real run against a
+local Qwen3.6-35B, no cloud account involved:
 
 ```
 desk : --> reading an email
@@ -179,10 +179,8 @@ NESSY_MODEL=qwen/qwen3.6-35b-a3b \
 Pick a model that supports tool calling. One that cannot call a tool will read the email, answer
 politely, and prove nothing.
 
-**The demonstration happens at startup.** Both scenario emails are delivered and handled with
-nothing posted and nobody clicking. There is also a text box on the page, so you can write your own
-email and watch what this lesson does with it — the emails in this repository are not special, and
-yours will not be either.
+The page has a box for writing an email, with presets for the ones discussed above. Send one and
+watch the console. The emails in this repository are not special, and yours will not be either.
 
 ## A note on the system prompt
 
@@ -212,7 +210,7 @@ The transcript above is from the neutral prompt.
 | `DeskAgent` | builds the prompt and hands it to the agent — the lesson is in `handle` |
 | `Desk` | the agent's type, its system prompt, and one agent id per email |
 | `RefundTool` / `IssueCreditTool` | the two authorities, registered with no approver and no check |
-| `Mailroom` | delivers the two scenario emails to the desk at startup |
+
 | `WatchTheDesk` | listens to the agent's events so the lesson can be watched rather than inferred |
 
 The desk itself lives in [`guvnor-domain`](../guvnor-domain), shared by every lesson and changed by

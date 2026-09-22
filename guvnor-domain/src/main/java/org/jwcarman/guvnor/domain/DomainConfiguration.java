@@ -21,7 +21,7 @@ import org.jwcarman.guvnor.domain.billing.LedgerService;
 import org.jwcarman.guvnor.domain.billing.RefundService;
 import org.jwcarman.guvnor.domain.correspondence.MessageService;
 import org.jwcarman.guvnor.domain.desk.DeskController;
-import org.jwcarman.guvnor.domain.desk.Mailroom;
+import org.jwcarman.guvnor.domain.desk.OpeningBalance;
 import org.jwcarman.guvnor.domain.disputes.DisputeService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -94,12 +94,11 @@ public class DomainConfiguration {
     return new DisputeService();
   }
 
-  /** The two scenario emails, delivered at startup to every lesson alike. */
+  /** One customer with one charge, so a dispute has something to be about. */
   @Bean
   @ConditionalOnMissingBean
-  public Mailroom mailroom(
-      ChargeService charges, MessageService messages, DisputeService disputes) {
-    return new Mailroom(charges, messages, disputes);
+  public OpeningBalance openingBalance(ChargeService charges) {
+    return new OpeningBalance(charges);
   }
 
   /** The front of the desk. Declared, like everything else here, rather than scanned for. */

@@ -43,12 +43,12 @@ when the previous lesson ends.
 
 Read [Lesson 0](guvnor-0-desk) even though nothing happens in it, because *why* nothing happens is
 the reframe the rest depends on. If you only run one, run [Lesson 1](guvnor-1-naive) and watch the
-log at startup.
+log.
 
 ## guvnor-domain
 
 The billing support desk. Every lesson shares it and none of them change it: the domain, the
-controller, the pages, and the mailroom that delivers the two scenario emails at startup.
+controller, the shared page, and the one customer whose statement carries a $42.00 charge.
 
 It depends on **neither Loch nor Nessy**. It is the business as it was before anyone thought about
 putting a model in it, which is what lets lesson 0 use it honestly rather than using a domain
@@ -154,12 +154,16 @@ turns on it.
 
 ### What you should see
 
-From lesson 1 on, **the demonstration happens at startup**. The mailroom delivers the two scenario
-emails and the desk gets to work, with nothing posted and nobody clicking. Watch the log.
+Nothing, until you send something. Each lesson starts with one customer and one $42.00 charge on
+their statement, and an empty inbox.
 
-Every lesson also has a text box on its page, so you can write your own email and see what that
-lesson does with it. That is the interesting part: the emails in this repository are not special,
-and yours will not be either.
+The page has a box for writing an email, with one-click presets for the ones this series
+discusses — a genuine refund request, a crude injection, a politely-worded one, a card number
+written with spaces. The presets fill the form rather than send it, so they are starting points
+to edit.
+
+Send one and watch the console. That is the whole interface, and it is the same in every lesson;
+what differs is what each lesson does with what you sent.
 
 ## Building
 

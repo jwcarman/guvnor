@@ -13,7 +13,7 @@ directory.*
 Here is a billing support desk. Mail arrives, somebody reads it, somebody decides what to do. It
 has been built roughly this way for thirty years.
 
-Two emails are sitting in its inbox.
+Send it two emails from the box on its page.
 
 The first is from a customer who has been charged twice:
 
@@ -28,11 +28,11 @@ That second email is a prompt injection. It is a good one — it asserts authori
 urgency, and it names a specific amount. If you have read anything about agent security in the
 last two years you know what it is trying to do.
 
-Run this module and look at the ledger.
+Send both, then look at the ledger.
 
 ```
 Money that has moved
-  Nothing. Both emails have been sitting here since startup.
+  Nothing yet.
 ```
 
 Nothing happened.
@@ -126,34 +126,36 @@ No model, no API key, no database.
 ./mvnw -pl guvnor-0-desk spring-boot:run  # http://localhost:8080
 ```
 
-Open a message. Notice that reading it is something *you* did: `MessageService.body(...)` is the
-one call in the desk that hands out what a customer wrote, and the inbox page never makes it.
+Send yourself some mail from the box on the page — there are presets for the emails this series
+discusses, and they fill the form rather than send it, so you can edit them first.
 
-There is a text box for delivering your own mail. Write the most threatening email you can. It
-will appear in the inbox, and that is all it will do.
+Then open a message. Notice that reading it is something *you* did: `MessageService.body(...)` is
+the one call in the desk that hands out what a customer wrote, and the page listing the inbox
+never makes it.
+
+Write the most threatening email you can. It will appear in the inbox, and that is all it will do.
 
 ## What is in here
 
 | file | what it is |
 |---|---|
-| `DeskController` | the desk as an operator sees it; every authority is behind a button |
-| `Mailroom` | puts the two scenario emails in the inbox at startup |
-| `templates/` | the inbox and the message view |
+| `OperatorController` | the part only this lesson has: opening a message, and the buttons |
+| `templates/mail.html` | what an operator sees when they open one |
 
-The desk itself — `Money`, `Charge`, `Refund`, `Credit`, the services — lives in
-[`guvnor-domain`](../guvnor-domain), is shared by every lesson, and is changed by none of them.
+That is the whole module. Everything else — the domain, the page, the controller that takes mail
+in — lives in [`guvnor-domain`](../guvnor-domain), is shared by every lesson, and is changed by
+none of them. Nothing arrives until you send it.
 
 ## The tests
 
 | test | says |
 |---|---|
-| `holds_both_emails` | the attack is present and intact |
-| `has_moved_no_money_at_all` | and inert |
-| `has_issued_no_goodwill_however_loudly_it_was_demanded` | including against the unbounded authority |
-| `moves_no_money_however_it_is_worded` | and so is anything else you post |
+| `takes_the_email_and_keeps_it` | the attack is present and intact |
+| `moves_no_money_at_all` | and inert |
+| `issues_no_goodwill_however_loudly_it_is_demanded` | including against the unbounded authority |
 | `can_refund_the_charge_the_genuine_mail_is_about` | the desk does work |
 | `is_refused_a_refund_larger_than_the_charge_without_anything_governing_them` | arithmetic, not governance |
 | `can_issue_goodwill_of_any_size_at_all` | and the dangerous authority is genuinely unguarded |
 
-The last three matter as much as the first four. "Nothing happened" is otherwise indistinguishable
+The last three matter as much as the first three. "Nothing happened" is otherwise indistinguishable
 from a broken application, and a reader who suspects that is right to.

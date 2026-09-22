@@ -49,7 +49,7 @@ That is a real fix. It is not a straw man, it is not lazy, and if you have shipp
 handles untrusted text in the last two years there is a decent chance it looks approximately like
 this. Some of it is even in the OWASP guidance.
 
-**And it works.** Run this module and the first thing in the log is:
+**And it works.** Send the email that took $999.00 out of lesson 1, and the log says:
 
 ```
 refused: this email contains known injection phrasing, and was not shown to the model
@@ -266,10 +266,10 @@ NESSY_MODEL=qwen/qwen3.6-35b-a3b \
 ./mvnw -pl guvnor-2-careful spring-boot:run
 ```
 
-Four emails are delivered at startup: the two every lesson gets, and two more that only this
-lesson needs. Watch the log — the refusal comes first, which is the point.
+Send the **crude injection** preset first and watch it be refused before the model is asked
+anything. Then send the **polite injection**, which is the same demand in different words.
 
-There is a text box on the page. Try to get money out of it. You will not need long.
+Then write your own. You will not need long.
 
 ## What is in here
 

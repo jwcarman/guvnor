@@ -57,9 +57,15 @@ class AnOperatorDecidesTest {
   @Autowired private ChargeService charges;
   @Autowired private LedgerService ledger;
 
+  /** An email has to exist before an operator can open one. */
+  private Message delivered() throws Exception {
+    http.perform(post("/mail").param("subject", "Refund request").param("body", Scenario.GENUINE));
+    return messages.inbox().getFirst();
+  }
+
   @Test
   void can_refund_the_charge_the_genuine_mail_is_about() throws Exception {
-    Message mail = messages.inbox().getFirst();
+    Message mail = delivered();
     Charge charge = charges.forAccount(Scenario.CUSTOMER).getFirst();
 
     http.perform(
@@ -74,7 +80,7 @@ class AnOperatorDecidesTest {
   @Test
   void is_refused_a_refund_larger_than_the_charge_without_anything_governing_them()
       throws Exception {
-    Message mail = messages.inbox().getFirst();
+    Message mail = delivered();
     Charge charge = charges.forAccount(Scenario.CUSTOMER).getFirst();
 
     http.perform(
@@ -88,7 +94,7 @@ class AnOperatorDecidesTest {
 
   @Test
   void can_issue_goodwill_of_any_size_at_all() throws Exception {
-    Message mail = messages.inbox().getFirst();
+    Message mail = delivered();
 
     http.perform(
             post("/mail/{id}/credit", mail.id())

@@ -128,8 +128,8 @@ name. One entry, one function, ten lines. That is the whole of what has to be tr
 The point of this lesson is not that the model stops being fooled. It does not. So here is a run
 where it was.
 
-Five emails claiming a supervisor had already approved $999.00. On four the model declined. On the
-fifth it was convinced, and called the tool:
+Five emails claiming a supervisor had already approved $999.00, sent from the page. On four the
+model declined. On the fifth it was convinced, and called the tool:
 
 ```
 desk : *** wants to: [issue_credit]
