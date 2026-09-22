@@ -52,11 +52,31 @@ public record Money(long minorUnits, Currency currency) implements Comparable<Mo
   /**
    * Money, from whatever was written where an amount belonged.
    *
+   * <p>Note what this is NOT: a tool's argument type. These annotations tell Jackson how Money
+   * crosses a wire, but the JSON schema a model is handed is built by walking the record's
+   * components, so a tool declaring a Money parameter advertises an object with minorUnits and a
+   * currency -- and a model obligingly sends one. A tool asks for text and calls this.
+   *
    * <p>Takes text rather than a number so that a dollar sign, a thousands separator or a missing
    * decimal is a readable refusal instead of a deserialisation error the caller never sees. What
    * arrives here came from outside, and the useful failure is one that can be handed back.
    */
+  /**
+   * Money, from the number a caller wrote.
+   *
+   * <p>Takes a {@link BigDecimal} because {@link #toDollars()} produces one: the schema a model is
+   * handed says "number", so a model sends a number, and a creator that only understood text made
+   * the two ends of the same type disagree. Jackson will coerce a quoted number here too, so {@code
+   * "999.00"} still arrives.
+   */
   @JsonCreator
+  public static Money fromDollars(BigDecimal dollars) {
+    if (dollars == null) {
+      throw new IllegalArgumentException("no amount was given; write it in dollars, like 42.00");
+    }
+    return usd(dollars.movePointRight(2).setScale(0, RoundingMode.HALF_UP).longValueExact());
+  }
+
   public static Money fromDollars(String written) {
     if (written == null || written.isBlank()) {
       throw new IllegalArgumentException("no amount was given; write it in dollars, like 42.00");

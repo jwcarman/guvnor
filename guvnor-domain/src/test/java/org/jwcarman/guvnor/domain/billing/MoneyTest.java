@@ -80,7 +80,7 @@ class MoneyTest {
 
     @Test
     void refuses_an_absent_amount_readably() {
-      assertThatThrownBy(() -> Money.fromDollars(null))
+      assertThatThrownBy(() -> Money.fromDollars((String) null))
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessageContaining("42.00");
     }
