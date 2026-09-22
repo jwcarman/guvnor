@@ -16,7 +16,6 @@
 package org.jwcarman.guvnor.domain.billing;
 
 import java.time.Instant;
-import org.springframework.stereotype.Service;
 
 /**
  * The bounded authority: money returned against a charge.
@@ -25,7 +24,6 @@ import org.springframework.stereotype.Service;
  * arithmetic rather than policy, so no amount of governance above this makes it safer and no
  * absence of governance makes it dangerous. It is here to be the thing the other authority is not.
  */
-@Service
 public class RefundService {
 
   private final ChargeService charges;

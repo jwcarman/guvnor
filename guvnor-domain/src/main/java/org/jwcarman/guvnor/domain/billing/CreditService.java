@@ -16,7 +16,6 @@
 package org.jwcarman.guvnor.domain.billing;
 
 import java.time.Instant;
-import org.springframework.stereotype.Service;
 
 /**
  * The unbounded authority: goodwill money to an account.
@@ -26,7 +25,6 @@ import org.springframework.stereotype.Service;
  * to live above the billing system rather than inside it. Nothing this class could do would make it
  * safe, because "safe" here means "issued for a good reason", and a good reason is not a quantity.
  */
-@Service
 public class CreditService {
 
   private final LedgerService ledger;

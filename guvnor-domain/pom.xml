@@ -32,12 +32,13 @@
   <description>The billing support desk. Every lesson shares it and none of them change it.</description>
 
   <dependencies>
-    <!-- Spring only for the stereotype. There is no web layer here, no Boot, and deliberately
-         nothing from Loch or Nessy: this is the business as it was before anyone thought about
-         putting a model in it, which is what lets lesson 0 use it honestly. -->
+    <!-- The desk itself is plain Java: no Spring, no Boot, and deliberately nothing from Loch or
+         Nessy. This dependency is for DomainConfiguration alone, which assembles the services for
+         an application that wants them. Everything under billing, correspondence and disputes
+         compiles without it. -->
     <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-context</artifactId>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-autoconfigure</artifactId>
     </dependency>
 
     <!-- UUIDv7: time-ordered, so identifiers sort the way events happened. -->

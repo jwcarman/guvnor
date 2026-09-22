@@ -18,7 +18,6 @@ package org.jwcarman.guvnor.domain.billing;
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import org.springframework.stereotype.Service;
 
 /**
  * Every movement of money, and the only honest answer to "did anything actually happen".
@@ -26,7 +25,6 @@ import org.springframework.stereotype.Service;
  * <p>A refund and a credit are authorised in completely different ways and land here the same, so a
  * question asked of the ledger cannot be fooled by how the money was let out.
  */
-@Service
 public class LedgerService {
 
   private final List<LedgerEntry> entries = new CopyOnWriteArrayList<>();

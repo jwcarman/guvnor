@@ -21,10 +21,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jwcarman.guvnor.domain.correspondence.MessageId;
-import org.springframework.stereotype.Service;
 
 /** The cases on the desk. */
-@Service
 public class DisputeService {
 
   private final Map<DisputeId, Dispute> disputes = new ConcurrentHashMap<>();

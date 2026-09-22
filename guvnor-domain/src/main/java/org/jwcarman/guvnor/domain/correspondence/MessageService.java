@@ -22,10 +22,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jwcarman.guvnor.domain.billing.AccountId;
-import org.springframework.stereotype.Service;
 
 /** The desk's correspondence: what arrived, and -- separately -- what it said. */
-@Service
 public class MessageService {
 
   private final Map<MessageId, Message> messages = new ConcurrentHashMap<>();

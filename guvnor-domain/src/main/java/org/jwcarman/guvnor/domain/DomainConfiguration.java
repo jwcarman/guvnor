@@ -15,18 +15,70 @@
  */
 package org.jwcarman.guvnor.domain;
 
-import org.springframework.context.annotation.ComponentScan;
+import org.jwcarman.guvnor.domain.billing.ChargeService;
+import org.jwcarman.guvnor.domain.billing.CreditService;
+import org.jwcarman.guvnor.domain.billing.LedgerService;
+import org.jwcarman.guvnor.domain.billing.RefundService;
+import org.jwcarman.guvnor.domain.correspondence.MessageService;
+import org.jwcarman.guvnor.domain.disputes.DisputeService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * The desk's services, for an application that wants them.
+ * The desk, assembled.
  *
- * <p>Imported rather than scanned across. An application that widens its own component scan to
- * cover this package also replaces the filter Spring Boot installs by default -- the one that keeps
- * {@code @TestConfiguration} classes out of the application context -- and then every test's
- * private fixtures are loaded into every other test's context. That failure reads as a duplicate
- * bean definition a long way from its cause.
+ * <p>Imported by name rather than auto-configured, and that is a choice worth explaining in a
+ * series about things being inspectable. An auto-configuration would arrive because a jar is on the
+ * classpath and a file in META-INF says so; a reader opening a lesson's application class would
+ * find no mention of where the desk came from. One {@code @Import} is the line their eye lands on
+ * first.
+ *
+ * <p>Declared rather than component-scanned for a plainer reason: an application that widens its
+ * own scan to cover this package also replaces the filter Spring Boot installs to keep
+ * {@code @TestConfiguration} out of the application context, and then every test's private fixtures
+ * load into every other test's context.
+ *
+ * <p>Every service is conditional, so a lesson that needs to put something in the way of one of
+ * them -- which is what lesson 3 does to reading a message body -- declares its own and this stands
+ * aside.
  */
 @Configuration(proxyBeanMethods = false)
-@ComponentScan
-public class DomainConfiguration {}
+public class DomainConfiguration {
+
+  @Bean
+  @ConditionalOnMissingBean
+  public LedgerService ledgerService() {
+    return new LedgerService();
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  public ChargeService chargeService() {
+    return new ChargeService();
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  public RefundService refundService(ChargeService charges, LedgerService ledger) {
+    return new RefundService(charges, ledger);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  public CreditService creditService(LedgerService ledger) {
+    return new CreditService(ledger);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  public MessageService messageService() {
+    return new MessageService();
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  public DisputeService disputeService() {
+    return new DisputeService();
+  }
+}
