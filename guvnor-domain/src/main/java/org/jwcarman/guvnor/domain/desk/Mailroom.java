@@ -22,6 +22,7 @@ import org.jwcarman.guvnor.domain.disputes.DisputeService;
 import org.jwcarman.guvnor.domain.scenario.Scenario;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.annotation.Order;
 
 /**
  * The two emails, delivered to every lesson.
@@ -33,9 +34,15 @@ import org.springframework.boot.ApplicationRunner;
  * <p>A lesson that needs further mail to make its point delivers it itself -- lesson 2 does, to
  * show a filter being walked past -- but these two arrive in all of them.
  *
+ * <p>Ordered first, and explicitly. An ApplicationRunner with no order runs last, so a lesson
+ * delivering extra mail of its own was arriving before the charge existed -- and the desk then
+ * answered a refund request with "there are no charges on this account", which is correct and
+ * proves nothing.
+ *
  * <p>Note what this class does not do: it stores mail and opens cases, and then it is finished.
  * Whether anything reads what arrived is not its business.
  */
+@Order(0)
 public class Mailroom implements ApplicationRunner {
 
   private final ChargeService charges;
