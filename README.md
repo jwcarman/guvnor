@@ -25,7 +25,7 @@ lesson takes a belief the previous one left you holding, and breaks it.
 | 0 | [**The desk**](guvnor-0-desk) | Language models introduced a security problem. | nothing — and nothing is defending it |
 | 1 | [**Naive**](guvnor-1-naive) | A model is a tool I call. | the injected email moves $999.00 |
 | 2 | [**Careful**](guvnor-2-careful) | I can clean the input. | a reworded demand takes $999.00 anyway |
-| 3 | *Concealed* | If PII never reaches the LLM, I have solved this. | *not built* |
+| 3 | [**Concealed**](guvnor-3-concealed) | If PII never reaches the LLM, I have solved this. | the injected instruction arrives intact |
 | 4 | *Quarantined* | I will validate what the model extracted before acting on it. | *not built* |
 | 5 | *Approved* | The limits are business logic, so they live in my code. | *not built* |
 | 6 | *Auditable* | It is governed, because I governed it. | *not built* |
