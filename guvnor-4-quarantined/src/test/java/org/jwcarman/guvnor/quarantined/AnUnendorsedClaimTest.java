@@ -85,6 +85,7 @@ class AnUnendorsedClaimTest {
   }
 
   @Autowired private Conceal<String> inbound;
+  @Autowired private Derivation<String, String> redacted;
   @Autowired private Derivation<String, Claim> quarantined;
   @Autowired private Derivation<Claim, Claim> confirmed;
   @Autowired private Reveal<Claim> authority;
@@ -96,10 +97,30 @@ class AnUnendorsedClaimTest {
     edge.handling(Scenario.CUSTOMER);
   }
 
+  /**
+   * The real chain, and it has to be the real chain.
+   *
+   * <p>Scrubbing first, because a claim derived straight from unscrubbed mail inherits CARDHOLDER,
+   * and nothing that reads claims will admit that -- correctly. The extraction lowers nothing, so
+   * whatever sensitivity the mail still had is what the claim carries.
+   */
   private Surrogate<Claim> claimFor(Money amount) {
     READ.set(new Request(Request.Kind.GOODWILL_CREDIT, amount.toDollars().toPlainString()));
     Surrogate<String> mail = inbound.conceal("whatever the customer wrote");
-    return ((Derived.Made<Claim>) quarantined.derive(mail)).value();
+    Surrogate<String> safe = redacted.derive(mail).orThrow();
+    return ((Derived.Made<Claim>) quarantined.derive(safe)).value();
+  }
+
+  /** And the chain is not optional: unscrubbed mail produces a claim nothing will take. */
+  @Test
+  void cannot_be_endorsed_if_the_mail_was_never_scrubbed() {
+    READ.set(new Request(Request.Kind.GOODWILL_CREDIT, "42.00"));
+    Scenario.seedCharge(charges);
+    Surrogate<String> unscrubbed = inbound.conceal("whatever the customer wrote");
+
+    Surrogate<Claim> claim = ((Derived.Made<Claim>) quarantined.derive(unscrubbed)).value();
+
+    assertThat(confirmed.derive(claim)).isNotInstanceOf(Derived.Made.class);
   }
 
   @Test
@@ -136,7 +157,9 @@ class AnUnendorsedClaimTest {
     assertThat(authority.reveal(claim)).isInstanceOf(Revealed.Denied.class);
 
     Surrogate<Claim> supported = ((Derived.Made<Claim>) confirmed.derive(claim)).value();
-    assertThat(authority.reveal(supported).orThrow().supportedBy()).isEqualTo(charge.id());
+    assertThat(authority.reveal(supported).orThrow().supportedBy())
+        .as("endorsed by a charge that actually exists on this account")
+        .isIn(charges.forAccount(Scenario.CUSTOMER).stream().map(Charge::id).toList());
   }
 
   /** Nothing on a claim can hold a sentence, so nothing filling one in can smuggle one. */

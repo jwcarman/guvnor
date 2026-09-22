@@ -20,7 +20,6 @@ import static org.jwcarman.guvnor.quarantined.Vocabulary.Integrity.ENDORSED;
 import static org.jwcarman.guvnor.quarantined.Vocabulary.Integrity.UNENDORSED;
 import static org.jwcarman.guvnor.quarantined.Vocabulary.SENSITIVITY;
 import static org.jwcarman.guvnor.quarantined.Vocabulary.Sensitivity.CARDHOLDER;
-import static org.jwcarman.guvnor.quarantined.Vocabulary.Sensitivity.ORDINARY;
 import static org.jwcarman.guvnor.quarantined.Vocabulary.Sensitivity.PERSONAL;
 
 import java.util.Optional;
@@ -159,9 +158,8 @@ public class CharterConfiguration {
         quarantine::read,
         d ->
             d.accepting(
-                    ctx ->
-                        Ceiling.of(SENSITIVITY, Constraint.any()).with(INTEGRITY, Constraint.any()))
-                .lowering(joined -> joined.with(SENSITIVITY, ORDINARY)));
+                ctx ->
+                    Ceiling.of(SENSITIVITY, Constraint.any()).with(INTEGRITY, Constraint.any())));
   }
 
   /**
