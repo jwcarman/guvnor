@@ -128,15 +128,17 @@ public class CharterConfiguration {
   }
 
   /**
-   * How a claim gets in: as something a model said, which is to say unendorsed.
+   * How a claim gets in: as something a model read out of a stranger's email.
    *
-   * <p>The agent proposes; it does not decide. Whatever it hands over arrives here labelled as
-   * untrusted, and no argument it makes can change that, because nothing takes a label.
+   * <p>The quarantine conceals what it extracted the moment it has it, so the claim is a governed
+   * value from the outset rather than a plain object that becomes one later. Validated in shape,
+   * untrusted in label. No argument any model makes can change the label, because nothing takes
+   * one.
    */
   @Bean
-  public Conceal<Claim> proposedCredit(Charter charter) {
+  public Conceal<Claim> claimedByTheQuarantine(Charter charter) {
     return charter.source(
-        "proposed-credit",
+        "quarantined-claim",
         Claim.TYPE,
         ctx -> Label.of(SENSITIVITY, ORDINARY).with(INTEGRITY, UNENDORSED));
   }
@@ -202,6 +204,10 @@ public class CharterConfiguration {
         // model wrote does not travel any further than this method.
         .map(
             charge ->
-                new Claim(claim.account(), claim.amount(), "supported by charge " + charge.id()));
+                new Claim(
+                    claim.account(),
+                    claim.amount(),
+                    claim.kind(),
+                    "supported by charge " + charge.id()));
   }
 }

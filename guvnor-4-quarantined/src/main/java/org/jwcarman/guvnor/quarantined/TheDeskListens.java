@@ -16,6 +16,7 @@
 package org.jwcarman.guvnor.quarantined;
 
 import org.jwcarman.guvnor.domain.correspondence.MessageReceived;
+import org.jwcarman.guvnor.domain.correspondence.MessageService;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
@@ -34,13 +35,25 @@ import org.springframework.stereotype.Component;
 public class TheDeskListens {
 
   private final DeskAgent desk;
+  private final GuardedMailroom mailroom;
+  private final MessageService messages;
 
-  public TheDeskListens(DeskAgent desk) {
+  public TheDeskListens(DeskAgent desk, GuardedMailroom mailroom, MessageService messages) {
     this.desk = desk;
+    this.mailroom = mailroom;
+    this.messages = messages;
   }
 
+  /**
+   * Conceal first, then think about it.
+   *
+   * <p>The first thing that happens to an arriving email is that it stops being text. Only then
+   * does anything decide what to do with it, and by that point there is nothing to decide with
+   * except a reference.
+   */
   @EventListener
   public void onMessageReceived(MessageReceived received) {
+    mailroom.take(received.message(), messages.body(received.message()).orElse(""));
     desk.handle(received.message());
   }
 }

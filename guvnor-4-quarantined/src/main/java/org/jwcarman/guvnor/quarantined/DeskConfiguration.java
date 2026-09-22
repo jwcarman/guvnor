@@ -17,7 +17,6 @@ package org.jwcarman.guvnor.quarantined;
 
 import org.jwcarman.guvnor.domain.billing.CreditService;
 import org.jwcarman.guvnor.domain.billing.RefundService;
-import org.jwcarman.loch.Conceal;
 import org.jwcarman.loch.Derivation;
 import org.jwcarman.loch.Reveal;
 import org.jwcarman.nessy.api.Harness;
@@ -39,7 +38,6 @@ public class DeskConfiguration {
       DefaultHarnessFactory factory,
       RefundService refunds,
       CreditService credits,
-      Conceal<Claim> proposed,
       Derivation<Claim, Claim> confirmed,
       Reveal<Claim> authority) {
     return factory.create(
@@ -55,6 +53,6 @@ public class DeskConfiguration {
                 // against a local model.
                 .inference(in -> in.maxTokens(4096))
                 .tool(new RefundTool(refunds))
-                .tool(new IssueCreditTool(credits, proposed, confirmed, authority)));
+                .tool(new IssueCreditTool(credits, confirmed, authority)));
   }
 }

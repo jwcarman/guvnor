@@ -25,12 +25,7 @@ import org.jwcarman.loch.SurrogateType;
  * <p>A claim is not a decision. This one was produced by a model reading a stranger's email, so it
  * starts life unendorsed and stays that way until something the desk already trusts agrees with it.
  */
-public record Claim(AccountId account, Money amount, String basis) {
-
-  /** What a model proposes: an account and an amount, and no account of why. */
-  public static Claim proposed(AccountId account, Money amount) {
-    return new Claim(account, amount, "");
-  }
+public record Claim(AccountId account, Money amount, Request.Kind kind, String basis) {
 
   public static final SurrogateType<Claim> TYPE = SurrogateType.of("claim", Claim.class);
 }

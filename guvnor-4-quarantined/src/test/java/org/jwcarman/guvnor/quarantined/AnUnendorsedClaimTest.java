@@ -70,7 +70,7 @@ class AnUnendorsedClaimTest {
   @Autowired private ChargeService charges;
 
   private Surrogate<Claim> claimFor(Money amount) {
-    return proposed.conceal(Claim.proposed(Scenario.CUSTOMER, amount));
+    return proposed.conceal(new Claim(Scenario.CUSTOMER, amount, Request.Kind.GOODWILL_CREDIT, ""));
   }
 
   @Test
