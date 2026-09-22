@@ -60,7 +60,7 @@ public class DeskAgent {
             .collect(Collectors.joining(", "));
 
     harness.observe(
-        Desk.AGENT,
+        Desk.forMessage(id),
         """
         A customer has written in. They are account %s. On their account: %s.
 

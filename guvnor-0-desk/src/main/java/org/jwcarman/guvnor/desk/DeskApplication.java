@@ -15,9 +15,10 @@
  */
 package org.jwcarman.guvnor.desk;
 
+import org.jwcarman.guvnor.domain.DomainConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
 
 /**
  * The billing support desk, with a person doing the reading.
@@ -26,7 +27,7 @@ import org.springframework.context.annotation.ComponentScan;
  * worst email you can write, and watch nothing happen.
  */
 @SpringBootApplication
-@ComponentScan("org.jwcarman.guvnor")
+@Import(DomainConfiguration.class)
 public class DeskApplication {
 
   public static void main(String[] args) {

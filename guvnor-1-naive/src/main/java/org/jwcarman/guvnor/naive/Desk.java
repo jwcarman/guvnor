@@ -15,8 +15,7 @@
  */
 package org.jwcarman.guvnor.naive;
 
-import java.nio.charset.StandardCharsets;
-import java.util.UUID;
+import org.jwcarman.guvnor.domain.correspondence.MessageId;
 import org.jwcarman.nessy.api.AgentId;
 import org.jwcarman.nessy.api.AgentType;
 
@@ -25,9 +24,21 @@ public final class Desk {
 
   public static final AgentType TYPE = new AgentType("dispute-desk");
 
-  /** Name-based, so it is the same desk after a restart. */
-  public static final AgentId AGENT =
-      new AgentId(UUID.nameUUIDFromBytes("dispute-desk".getBytes(StandardCharsets.UTF_8)));
+  /**
+   * One agent per email, not one agent for the desk.
+   *
+   * <p>A single long-lived agent would carry every case it has ever seen into every case it sees
+   * next, so one customer's mail would be sitting in the context while another customer's is being
+   * handled -- and an instruction planted in the first would still be there for the second. A case
+   * is a conversation; the next case is a different conversation.
+   *
+   * <p>Derived from the message rather than random, so the conversation that handled a given email
+   * can still be found afterwards. That matters in lesson 6, when somebody wants to audit what was
+   * decided and why.
+   */
+  public static AgentId forMessage(MessageId message) {
+    return new AgentId(message.value());
+  }
 
   public static final String SYSTEM_PROMPT =
       """

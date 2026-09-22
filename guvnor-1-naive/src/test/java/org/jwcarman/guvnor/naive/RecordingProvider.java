@@ -16,6 +16,7 @@
 package org.jwcarman.guvnor.naive;
 
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import org.jwcarman.nessy.api.block.Block;
 import org.jwcarman.nessy.api.turn.Turn;
@@ -39,6 +40,7 @@ import org.jwcarman.nessy.spi.narration.AgentNarrator;
 public final class RecordingProvider implements InferenceProvider {
 
   private final AtomicReference<String> lastPrompt = new AtomicReference<>();
+  private final List<String> prompts = new CopyOnWriteArrayList<>();
 
   @Override
   public InferenceResult infer(InferenceRequest request, AgentNarrator narrator) {
@@ -47,11 +49,17 @@ public final class RecordingProvider implements InferenceProvider {
       everything.append(turn.observation()).append('\n');
     }
     lastPrompt.set(everything.toString());
+    prompts.add(everything.toString());
     return new InferenceResult.Answer(List.of(new Block.Text("Noted.")));
   }
 
   /** Everything the agent was handed, as one flat piece of text -- because that is what it is. */
   public String lastPrompt() {
     return lastPrompt.get();
+  }
+
+  /** Every prompt this provider has been handed, in order. */
+  public List<String> prompts() {
+    return List.copyOf(prompts);
   }
 }

@@ -15,13 +15,14 @@
  */
 package org.jwcarman.guvnor.naive;
 
+import org.jwcarman.guvnor.domain.DomainConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
 
 /** The same desk, with an agent doing the reading. */
 @SpringBootApplication
-@ComponentScan("org.jwcarman.guvnor")
+@Import(DomainConfiguration.class)
 public class NaiveApplication {
 
   public static void main(String[] args) {
