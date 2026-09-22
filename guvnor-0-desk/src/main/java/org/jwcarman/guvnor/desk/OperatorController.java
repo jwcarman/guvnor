@@ -29,7 +29,6 @@ import org.jwcarman.guvnor.domain.correspondence.Message;
 import org.jwcarman.guvnor.domain.correspondence.MessageId;
 import org.jwcarman.guvnor.domain.correspondence.MessageService;
 import org.jwcarman.guvnor.domain.disputes.DisputeService;
-import org.jwcarman.guvnor.domain.scenario.Scenario;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,13 +38,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
- * The desk, as an operator sees it.
+ * What an operator can do, which is everything in this lesson.
  *
- * <p>Every authority in here is reached by a person clicking a button. The email is displayed;
- * nothing in this application acts on what it says, because nothing in this application reads it.
+ * <p>The inbox and the arrival of mail are the desk's own, and identical in every lesson. What is
+ * here is the part only this lesson has: a person, opening a message, and reaching an authority by
+ * clicking a button.
+ *
+ * <p>Nothing in this application acts on what an email says, because nothing in this application
+ * reads one. The desk announces every arrival, exactly as it does in every later lesson. In this
+ * one, nobody is listening.
  */
 @Controller
-public class DeskController {
+public class OperatorController {
 
   private final MessageService messages;
   private final ChargeService charges;
@@ -54,7 +58,7 @@ public class DeskController {
   private final LedgerService ledger;
   private final DisputeService disputes;
 
-  public DeskController(
+  public OperatorController(
       MessageService messages,
       ChargeService charges,
       RefundService refunds,
@@ -67,31 +71,6 @@ public class DeskController {
     this.credits = credits;
     this.ledger = ledger;
     this.disputes = disputes;
-  }
-
-  /**
-   * An email arrives.
-   *
-   * <p>The way in, so a reader can write their own and watch what the desk does with it. Post
-   * anything you like here, including instructions addressed to the software. In this lesson the
-   * only consequence is that it appears in the inbox.
-   */
-  @PostMapping("/mail")
-  public String receive(
-      @RequestParam String subject, @RequestParam String body, RedirectAttributes flash) {
-    Message arrived = messages.receive(Scenario.CUSTOMER, subject, body);
-    disputes.open(arrived.id());
-    flash.addFlashAttribute("said", "Delivered. Nothing has read it.");
-    return "redirect:/";
-  }
-
-  @GetMapping("/")
-  public String inbox(Model model) {
-    model.addAttribute("messages", messages.inbox());
-    model.addAttribute("customer", Scenario.CUSTOMER);
-    model.addAttribute("entries", ledger.entries());
-    model.addAttribute("credited", ledger.creditedTo(Scenario.CUSTOMER, Money.usd(0L)));
-    return "inbox";
   }
 
   /** The operator opens a message. This is the only thing in the desk that reads a body. */

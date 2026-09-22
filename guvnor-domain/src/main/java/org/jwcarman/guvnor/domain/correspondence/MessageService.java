@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import org.jwcarman.guvnor.domain.billing.AccountId;
 
 /** The desk's correspondence: what arrived, and -- separately -- what it said. */
@@ -28,11 +29,28 @@ public class MessageService {
 
   private final Map<MessageId, Message> messages = new ConcurrentHashMap<>();
   private final Map<MessageId, String> bodies = new ConcurrentHashMap<>();
+  private final Consumer<MessageReceived> announce;
+
+  /**
+   * @param announce told whenever mail arrives, after it is stored. A {@link Consumer} rather than
+   *     anything framework-shaped, so this package stays ordinary Java; an application supplies
+   *     whatever its own event machinery needs.
+   */
+  public MessageService(Consumer<MessageReceived> announce) {
+    this.announce = announce;
+  }
+
+  /** A desk nobody is listening to. What lesson 0 is, and what every desk was until recently. */
+  public MessageService() {
+    this(received -> {});
+  }
 
   public Message receive(AccountId from, String subject, String body) {
     Message message = new Message(MessageId.next(), from, subject, Instant.now());
     messages.put(message.id(), message);
     bodies.put(message.id(), body);
+    // Stored first, announced second: whoever is listening can read it.
+    announce.accept(new MessageReceived(message.id()));
     return message;
   }
 

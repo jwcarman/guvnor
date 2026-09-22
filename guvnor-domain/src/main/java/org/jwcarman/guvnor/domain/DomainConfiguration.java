@@ -20,8 +20,11 @@ import org.jwcarman.guvnor.domain.billing.CreditService;
 import org.jwcarman.guvnor.domain.billing.LedgerService;
 import org.jwcarman.guvnor.domain.billing.RefundService;
 import org.jwcarman.guvnor.domain.correspondence.MessageService;
+import org.jwcarman.guvnor.domain.desk.DeskController;
+import org.jwcarman.guvnor.domain.desk.Mailroom;
 import org.jwcarman.guvnor.domain.disputes.DisputeService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -70,15 +73,39 @@ public class DomainConfiguration {
     return new CreditService(ledger);
   }
 
+  /**
+   * The mailroom, wired to the application's own events.
+   *
+   * <p>This is the seam the whole series turns on. The desk receives mail and says so; what happens
+   * next is not its business. Lesson 0 has nothing listening, which is exactly why nothing happens
+   * in it. Every later lesson listens, and the difference between those lessons is entirely in what
+   * their listener does before it reaches a model.
+   */
   @Bean
   @ConditionalOnMissingBean
-  public MessageService messageService() {
-    return new MessageService();
+  public MessageService messageService(ApplicationEventPublisher events) {
+    return new MessageService(events::publishEvent);
   }
 
   @Bean
   @ConditionalOnMissingBean
   public DisputeService disputeService() {
     return new DisputeService();
+  }
+
+  /** The two scenario emails, delivered at startup to every lesson alike. */
+  @Bean
+  @ConditionalOnMissingBean
+  public Mailroom mailroom(
+      ChargeService charges, MessageService messages, DisputeService disputes) {
+    return new Mailroom(charges, messages, disputes);
+  }
+
+  /** The front of the desk. Declared, like everything else here, rather than scanned for. */
+  @Bean
+  @ConditionalOnMissingBean
+  public DeskController deskController(
+      MessageService messages, DisputeService disputes, LedgerService ledger) {
+    return new DeskController(messages, disputes, ledger);
   }
 }

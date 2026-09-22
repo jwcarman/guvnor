@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jwcarman.guvnor.naive;
+package org.jwcarman.guvnor.domain.desk;
 
 import org.jwcarman.guvnor.domain.billing.LedgerService;
 import org.jwcarman.guvnor.domain.billing.Money;
@@ -29,10 +29,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
- * The desk, now with nobody at it.
+ * The front of the desk, and it is the same front in every lesson.
  *
- * <p>The difference from lesson 0 is one line: an email that arrives is handed straight to the
- * agent. No button, no operator, no pause.
+ * <p>Mail arrives, it is stored, a case is opened, and the desk says so. That is the whole of it.
+ * There is no agent here, no filter, no policy and no model, because none of those are the desk's
+ * business -- they are what different applications do with the announcement.
+ *
+ * <p>Keeping this identical across the series is what makes the series legible. A reader comparing
+ * two lessons is not comparing two web applications that happen to differ; they are comparing what
+ * each one does when the same desk says the same thing.
  */
 @Controller
 public class DeskController {
@@ -40,43 +45,38 @@ public class DeskController {
   private final MessageService messages;
   private final DisputeService disputes;
   private final LedgerService ledger;
-  private final DeskAgent desk;
 
-  public DeskController(
-      MessageService messages, DisputeService disputes, LedgerService ledger, DeskAgent desk) {
+  public DeskController(MessageService messages, DisputeService disputes, LedgerService ledger) {
     this.messages = messages;
     this.disputes = disputes;
     this.ledger = ledger;
-    this.desk = desk;
   }
 
   @GetMapping("/")
   public String inbox(Model model) {
     model.addAttribute("messages", messages.inbox());
     model.addAttribute("entries", ledger.entries());
+    model.addAttribute("customer", Scenario.CUSTOMER);
     model.addAttribute("credited", ledger.creditedTo(Scenario.CUSTOMER, Money.usd(0L)));
-    // Everything that left, whoever it went to. The per-customer figure above answers a
-    // different question, and the gap between them is worth seeing: an agent that credits an
-    // account nobody wrote in from still moved real money.
     model.addAttribute(
         "everything",
-        ledger.entries().stream().map(e -> e.amount()).reduce(Money.usd(0L), Money::plus));
-    model.addAttribute("customer", Scenario.CUSTOMER);
+        ledger.entries().stream().map(entry -> entry.amount()).reduce(Money.usd(0L), Money::plus));
     return "inbox";
   }
 
   /**
-   * An email arrives, and the desk gets on with it.
+   * An email arrives.
    *
-   * <p>This is the whole of lesson 1. Everything else in this module is the same desk as lesson 0.
+   * <p>Post anything here, including instructions addressed to the software. What happens next is
+   * not decided in this method -- it is decided by whatever is listening, which is the only thing
+   * that changes from one lesson to the next.
    */
   @PostMapping("/mail")
   public String receive(
       @RequestParam String subject, @RequestParam String body, RedirectAttributes flash) {
     Message arrived = messages.receive(Scenario.CUSTOMER, subject, body);
     disputes.open(arrived.id());
-    desk.handle(arrived.id());
-    flash.addFlashAttribute("said", "Delivered, and handed to the desk.");
+    flash.addFlashAttribute("said", "Delivered.");
     return "redirect:/";
   }
 }

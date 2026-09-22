@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jwcarman.guvnor.desk;
+package org.jwcarman.guvnor.domain.desk;
 
 import org.jwcarman.guvnor.domain.billing.Charge;
 import org.jwcarman.guvnor.domain.billing.ChargeService;
@@ -22,10 +22,20 @@ import org.jwcarman.guvnor.domain.disputes.DisputeService;
 import org.jwcarman.guvnor.domain.scenario.Scenario;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.stereotype.Component;
 
-/** Puts the two emails in the inbox, and the charge one of them is about on the account. */
-@Component
+/**
+ * The two emails, delivered to every lesson.
+ *
+ * <p>Identical everywhere on purpose. A reader comparing lesson 4 against lesson 1 needs to know
+ * that the inputs were the same, and the cheapest way to know it is for there to be one copy of the
+ * code that delivers them.
+ *
+ * <p>A lesson that needs further mail to make its point delivers it itself -- lesson 2 does, to
+ * show a filter being walked past -- but these two arrive in all of them.
+ *
+ * <p>Note what this class does not do: it stores mail and opens cases, and then it is finished.
+ * Whether anything reads what arrived is not its business.
+ */
 public class Mailroom implements ApplicationRunner {
 
   private final ChargeService charges;
@@ -43,7 +53,6 @@ public class Mailroom implements ApplicationRunner {
     deliver();
   }
 
-  /** Both emails arrive, and each opens a case. Nothing reads either of them. */
   public Charge deliver() {
     Charge charge = Scenario.seedCharge(charges);
     disputes.open(Scenario.genuineMail(messages).id());

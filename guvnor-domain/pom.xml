@@ -41,6 +41,14 @@
       <artifactId>spring-boot-autoconfigure</artifactId>
     </dependency>
 
+    <!-- The desk has a front, and it is the same front in every lesson, so it lives here with
+         everything else that does not change. Spring MVC only; no Boot, and still nothing from
+         Loch or Nessy. -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-webmvc</artifactId>
+    </dependency>
+
     <!-- Annotations only: metadata on Money saying how it crosses a wire. No Jackson runtime
          here, and the same coordinates serve Jackson 2 and 3. -->
     <dependency>
