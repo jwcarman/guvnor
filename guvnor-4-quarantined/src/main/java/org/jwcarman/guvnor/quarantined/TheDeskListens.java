@@ -16,7 +16,6 @@
 package org.jwcarman.guvnor.quarantined;
 
 import org.jwcarman.guvnor.domain.correspondence.MessageReceived;
-import org.jwcarman.guvnor.domain.correspondence.MessageService;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
@@ -35,13 +34,9 @@ import org.springframework.stereotype.Component;
 public class TheDeskListens {
 
   private final DeskAgent desk;
-  private final GuardedMailroom mailroom;
-  private final MessageService messages;
 
-  public TheDeskListens(DeskAgent desk, GuardedMailroom mailroom, MessageService messages) {
+  public TheDeskListens(DeskAgent desk) {
     this.desk = desk;
-    this.mailroom = mailroom;
-    this.messages = messages;
   }
 
   /**
@@ -53,7 +48,6 @@ public class TheDeskListens {
    */
   @EventListener
   public void onMessageReceived(MessageReceived received) {
-    mailroom.take(received.message(), messages.body(received.message()).orElse(""));
     desk.handle(received.message());
   }
 }

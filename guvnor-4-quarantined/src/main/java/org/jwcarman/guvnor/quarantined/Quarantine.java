@@ -97,7 +97,7 @@ public class Quarantine {
 
     // Concealed the moment it exists, so there is no window in which it is an ordinary object
     // that ordinary code could act on by mistake.
-    return claimed.conceal(new Claim(account, amountOf(request), request.kind(), ""));
+    return claimed.conceal(Claim.unsupported(account, amountOf(request), request.kind()));
   }
 
   /** The amount, parsed. Anything that is not an amount of dollars stops here. */

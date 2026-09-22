@@ -20,7 +20,6 @@ import org.jwcarman.guvnor.domain.billing.Charge;
 import org.jwcarman.guvnor.domain.billing.ChargeService;
 import org.jwcarman.guvnor.domain.correspondence.Message;
 import org.jwcarman.guvnor.domain.correspondence.MessageId;
-import org.jwcarman.guvnor.domain.correspondence.MessageService;
 import org.jwcarman.loch.Derivation;
 import org.jwcarman.loch.Surrogate;
 import org.jwcarman.nessy.api.Harness;
@@ -45,23 +44,22 @@ import org.springframework.stereotype.Component;
 public class DeskAgent {
 
   private final Harness<String> harness;
-  private final MessageService messages;
+  private final GuardedMessages messages;
   private final ChargeService charges;
-  private final GuardedMailroom mailroom;
+
   private final Derivation<String, String> redacted;
   private final Quarantine quarantine;
 
   public DeskAgent(
       Harness<String> harness,
-      MessageService messages,
+      GuardedMessages messages,
       ChargeService charges,
-      GuardedMailroom mailroom,
       Derivation<String, String> redacted,
       Quarantine quarantine) {
     this.harness = harness;
     this.messages = messages;
     this.charges = charges;
-    this.mailroom = mailroom;
+
     this.redacted = redacted;
     this.quarantine = quarantine;
   }
@@ -70,7 +68,7 @@ public class DeskAgent {
     Message message = messages.find(id).orElseThrow();
 
     // Already concealed, at the edge, before this class existed in the story.
-    Surrogate<String> mail = mailroom.of(id).orElseThrow();
+    Surrogate<String> mail = messages.concealed(id);
 
     // Lesson 3's protection still applies, and applies to the quarantined model too: it is a
     // model, so it is a third party that keeps what it is shown, so it does not get the card.

@@ -16,6 +16,7 @@
 package org.jwcarman.guvnor.quarantined;
 
 import org.jwcarman.guvnor.domain.billing.AccountId;
+import org.jwcarman.guvnor.domain.billing.ChargeId;
 import org.jwcarman.guvnor.domain.billing.Money;
 import org.jwcarman.loch.SurrogateType;
 
@@ -25,7 +26,17 @@ import org.jwcarman.loch.SurrogateType;
  * <p>A claim is not a decision. This one was produced by a model reading a stranger's email, so it
  * starts life unendorsed and stays that way until something the desk already trusts agrees with it.
  */
-public record Claim(AccountId account, Money amount, Request.Kind kind, String basis) {
+public record Claim(AccountId account, Money amount, Request.Kind kind, ChargeId supportedBy) {
+
+  /** What the quarantine produces: nothing has agreed with it yet. */
+  public static Claim unsupported(AccountId account, Money amount, Request.Kind kind) {
+    return new Claim(account, amount, kind, null);
+  }
+
+  /** The same claim, tied to the charge that agreed with it. */
+  public Claim supportedBy(ChargeId charge) {
+    return new Claim(account, amount, kind, charge);
+  }
 
   public static final SurrogateType<Claim> TYPE = SurrogateType.of("claim", Claim.class);
 }

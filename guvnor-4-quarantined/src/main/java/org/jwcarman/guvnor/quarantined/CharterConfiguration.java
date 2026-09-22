@@ -15,6 +15,7 @@
  */
 package org.jwcarman.guvnor.quarantined;
 
+import static org.jwcarman.guvnor.quarantined.Vocabulary.ASKS;
 import static org.jwcarman.guvnor.quarantined.Vocabulary.INTEGRITY;
 import static org.jwcarman.guvnor.quarantined.Vocabulary.Integrity.ENDORSED;
 import static org.jwcarman.guvnor.quarantined.Vocabulary.Integrity.UNENDORSED;
@@ -75,7 +76,10 @@ public class CharterConfiguration {
     return charter.source(
         "customer-mail",
         Mail.TYPE,
-        ctx -> Label.of(SENSITIVITY, CARDHOLDER).with(INTEGRITY, UNENDORSED));
+        ctx ->
+            Label.of(SENSITIVITY, CARDHOLDER)
+                .with(INTEGRITY, UNENDORSED)
+                .with(ASKS, "nothing-yet"));
   }
 
   /**
@@ -96,7 +100,8 @@ public class CharterConfiguration {
             "support-model",
             ctx ->
                 Ceiling.of(SENSITIVITY, Constraint.atMost(PERSONAL))
-                    .with(INTEGRITY, Constraint.any()),
+                    .with(INTEGRITY, Constraint.any())
+                    .with(ASKS, Constraint.any()),
             Mail.TYPE)
         .reading(Mail.TYPE);
   }
@@ -123,7 +128,9 @@ public class CharterConfiguration {
         d ->
             d.accepting(
                     ctx ->
-                        Ceiling.of(SENSITIVITY, Constraint.any()).with(INTEGRITY, Constraint.any()))
+                        Ceiling.of(SENSITIVITY, Constraint.any())
+                            .with(INTEGRITY, Constraint.any())
+                            .with(ASKS, Constraint.any()))
                 .lowering(joined -> joined.with(SENSITIVITY, PERSONAL)));
   }
 
@@ -140,7 +147,10 @@ public class CharterConfiguration {
     return charter.source(
         "quarantined-claim",
         Claim.TYPE,
-        ctx -> Label.of(SENSITIVITY, ORDINARY).with(INTEGRITY, UNENDORSED));
+        (value, ctx) ->
+            Label.of(SENSITIVITY, ORDINARY)
+                .with(INTEGRITY, UNENDORSED)
+                .with(ASKS, value.kind().name()));
   }
 
   /**
@@ -157,7 +167,8 @@ public class CharterConfiguration {
             "credit-authority",
             ctx ->
                 Ceiling.of(SENSITIVITY, Constraint.atMost(ORDINARY))
-                    .with(INTEGRITY, Constraint.atMost(ENDORSED)),
+                    .with(INTEGRITY, Constraint.atMost(ENDORSED))
+                    .with(ASKS, Constraint.atMost(Request.Kind.GOODWILL_CREDIT.name())),
             Claim.TYPE)
         .reading(Claim.TYPE);
   }
@@ -184,7 +195,8 @@ public class CharterConfiguration {
             d.accepting(
                     ctx ->
                         Ceiling.of(SENSITIVITY, Constraint.atMost(ORDINARY))
-                            .with(INTEGRITY, Constraint.any()))
+                            .with(INTEGRITY, Constraint.any())
+                            .with(ASKS, Constraint.any()))
                 .lowering(joined -> joined.with(INTEGRITY, ENDORSED)));
   }
 
@@ -202,12 +214,6 @@ public class CharterConfiguration {
         .findFirst()
         // The endorsement replaces the model's account of why, with the desk's own. What the
         // model wrote does not travel any further than this method.
-        .map(
-            charge ->
-                new Claim(
-                    claim.account(),
-                    claim.amount(),
-                    claim.kind(),
-                    "supported by charge " + charge.id()));
+        .map(charge -> claim.supportedBy(charge.id()));
   }
 }

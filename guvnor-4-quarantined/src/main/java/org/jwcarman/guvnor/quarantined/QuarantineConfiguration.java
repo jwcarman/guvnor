@@ -15,6 +15,7 @@
  */
 package org.jwcarman.guvnor.quarantined;
 
+import org.jwcarman.loch.Conceal;
 import org.jwcarman.nessy.api.SystemPrompt;
 import org.jwcarman.nessy.api.extraction.Extractor;
 import org.jwcarman.nessy.api.extraction.ExtractorFactory;
@@ -22,6 +23,7 @@ import org.jwcarman.nessy.engine.extraction.DefaultExtractorFactory;
 import org.jwcarman.nessy.engine.schema.VictoolsInputSchemaGenerator;
 import org.jwcarman.nessy.spi.inference.InferenceProvider;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import tools.jackson.databind.json.JsonMapper;
@@ -36,6 +38,15 @@ import tools.jackson.databind.json.JsonMapper;
  */
 @Configuration(proxyBeanMethods = false)
 public class QuarantineConfiguration {
+
+  /**
+   * Replaces the desk's own mail intake, which the domain declares
+   * {@code @ConditionalOnMissingBean} precisely so a lesson can do this.
+   */
+  @Bean
+  public GuardedMessages messageService(ApplicationEventPublisher events, Conceal<String> inbound) {
+    return new GuardedMessages(events::publishEvent, inbound);
+  }
 
   @Bean
   public ExtractorFactory extractorFactory(InferenceProvider provider) {

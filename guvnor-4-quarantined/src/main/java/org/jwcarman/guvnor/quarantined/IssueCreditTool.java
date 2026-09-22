@@ -106,7 +106,11 @@ public final class IssueCreditTool implements Tool<IssueCreditTool.Input> {
     }
 
     Claim claim = ((Revealed.Allowed<Claim>) permitted).value();
-    Credit credit = credits.issue(claim.account(), claim.amount(), claim.basis());
+    // The ledger's reason is built here, from a charge id, rather than carried as text through
+    // anything a model touched.
+    Credit credit =
+        credits.issue(
+            claim.account(), claim.amount(), "supported by charge " + claim.supportedBy());
     return Awaited.ready(ToolResult.ok(new Block.Text("Credited " + credit.amount())));
   }
 }
