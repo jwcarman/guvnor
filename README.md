@@ -26,7 +26,7 @@ lesson takes a belief the previous one left you holding, and breaks it.
 | 1 | [**Naive**](guvnor-1-naive) | A model is a tool I call. | the injected email moves $999.00 |
 | 2 | [**Careful**](guvnor-2-careful) | I can clean the input. | a reworded demand takes $999.00 anyway |
 | 3 | [**Concealed**](guvnor-3-concealed) | If PII never reaches the LLM, I have solved this. | the injected instruction arrives intact |
-| 4 | *Quarantined* | I will validate what the model extracted before acting on it. | *not built* |
+| 4 | [**Quarantined**](guvnor-4-quarantined) | I will validate what the model extracted before acting on it. | the rule lives in Java, where the accountable cannot read it |
 | 5 | *Approved* | The limits are business logic, so they live in my code. | *not built* |
 | 6 | *Auditable* | It is governed, because I governed it. | *not built* |
 
