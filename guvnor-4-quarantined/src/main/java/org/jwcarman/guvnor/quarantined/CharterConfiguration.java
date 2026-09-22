@@ -15,7 +15,6 @@
  */
 package org.jwcarman.guvnor.quarantined;
 
-import static org.jwcarman.guvnor.quarantined.Vocabulary.ASKS;
 import static org.jwcarman.guvnor.quarantined.Vocabulary.INTEGRITY;
 import static org.jwcarman.guvnor.quarantined.Vocabulary.Integrity.ENDORSED;
 import static org.jwcarman.guvnor.quarantined.Vocabulary.Integrity.UNENDORSED;
@@ -76,10 +75,7 @@ public class CharterConfiguration {
     return charter.source(
         "customer-mail",
         Mail.TYPE,
-        ctx ->
-            Label.of(SENSITIVITY, CARDHOLDER)
-                .with(INTEGRITY, UNENDORSED)
-                .with(ASKS, "nothing-yet"));
+        ctx -> Label.of(SENSITIVITY, CARDHOLDER).with(INTEGRITY, UNENDORSED));
   }
 
   /**
@@ -100,8 +96,7 @@ public class CharterConfiguration {
             "support-model",
             ctx ->
                 Ceiling.of(SENSITIVITY, Constraint.atMost(PERSONAL))
-                    .with(INTEGRITY, Constraint.any())
-                    .with(ASKS, Constraint.any()),
+                    .with(INTEGRITY, Constraint.any()),
             Mail.TYPE)
         .reading(Mail.TYPE);
   }
@@ -128,29 +123,45 @@ public class CharterConfiguration {
         d ->
             d.accepting(
                     ctx ->
-                        Ceiling.of(SENSITIVITY, Constraint.any())
-                            .with(INTEGRITY, Constraint.any())
-                            .with(ASKS, Constraint.any()))
+                        Ceiling.of(SENSITIVITY, Constraint.any()).with(INTEGRITY, Constraint.any()))
                 .lowering(joined -> joined.with(SENSITIVITY, PERSONAL)));
   }
 
   /**
-   * How a claim gets in: as something a model read out of a stranger's email.
+   * The quarantined read, as a declassification the lattice can see.
    *
-   * <p>The quarantine conceals what it extracted the moment it has it, so the claim is a governed
-   * value from the outset rather than a plain object that becomes one later. Validated in shape,
-   * untrusted in label. No argument any model makes can change the label, because nothing takes
-   * one.
+   * <p>This was a {@code source} until somebody noticed what that meant. Reading the mail,
+   * extracting a claim and concealing the result minted a value with an asserted label -- ORDINARY,
+   * from mail that was CARDHOLDER -- which is a lowering, performed outside the system that exists
+   * to govern lowerings. It did not appear in the manifest under "can WEAKEN a label", and the
+   * lineage had no edge from the mail to the claim, so "where did this come from" ended at a source
+   * that claimed to know.
+   *
+   * <p>As a derivation it is all three of the things it should be: the lowering is declared, the
+   * provenance is recorded, and a reviewer asking what can declassify gets told about it.
+   *
+   * <p>Note what it does NOT lower: anything. This derivation changes how structured a value is,
+   * and structuredness is not a security property. What made the mail less sensitive was the
+   * scrubber, in its own named derivation, which is where a reviewer should look for a
+   * declassification -- not buried in an extraction that happens to produce a narrow shape.
+   *
+   * <p>So a claim comes out carrying exactly the label its mail had after scrubbing: personal, and
+   * unendorsed. A model read a stranger's email to produce it, so it is precisely as untrusted as
+   * what it came from. A model may transform a value; it may not be the reason a value becomes more
+   * trusted, or less sensitive.
    */
   @Bean
-  public Conceal<Claim> claimedByTheQuarantine(Charter charter) {
-    return charter.source(
-        "quarantined-claim",
+  public Derivation<String, Claim> quarantinedRead(Charter charter, Quarantine quarantine) {
+    return charter.checking(
+        "mail.claim",
+        Mail.TYPE,
         Claim.TYPE,
-        (value, ctx) ->
-            Label.of(SENSITIVITY, ORDINARY)
-                .with(INTEGRITY, UNENDORSED)
-                .with(ASKS, value.kind().name()));
+        quarantine::read,
+        d ->
+            d.accepting(
+                    ctx ->
+                        Ceiling.of(SENSITIVITY, Constraint.any()).with(INTEGRITY, Constraint.any()))
+                .lowering(joined -> joined.with(SENSITIVITY, ORDINARY)));
   }
 
   /**
@@ -166,9 +177,8 @@ public class CharterConfiguration {
         .destination(
             "credit-authority",
             ctx ->
-                Ceiling.of(SENSITIVITY, Constraint.atMost(ORDINARY))
-                    .with(INTEGRITY, Constraint.atMost(ENDORSED))
-                    .with(ASKS, Constraint.atMost(Request.Kind.GOODWILL_CREDIT.name())),
+                Ceiling.of(SENSITIVITY, Constraint.atMost(PERSONAL))
+                    .with(INTEGRITY, Constraint.atMost(ENDORSED)),
             Claim.TYPE)
         .reading(Claim.TYPE);
   }
@@ -194,9 +204,8 @@ public class CharterConfiguration {
         d ->
             d.accepting(
                     ctx ->
-                        Ceiling.of(SENSITIVITY, Constraint.atMost(ORDINARY))
-                            .with(INTEGRITY, Constraint.any())
-                            .with(ASKS, Constraint.any()))
+                        Ceiling.of(SENSITIVITY, Constraint.atMost(PERSONAL))
+                            .with(INTEGRITY, Constraint.any()))
                 .lowering(joined -> joined.with(INTEGRITY, ENDORSED)));
   }
 

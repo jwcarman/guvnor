@@ -17,6 +17,7 @@ package org.jwcarman.guvnor.quarantined;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.jwcarman.guvnor.domain.billing.Charge;
@@ -29,23 +30,28 @@ import org.jwcarman.loch.Derived;
 import org.jwcarman.loch.Reveal;
 import org.jwcarman.loch.Revealed;
 import org.jwcarman.loch.Surrogate;
+import org.jwcarman.nessy.api.Usage;
+import org.jwcarman.nessy.api.extraction.Extraction;
+import org.jwcarman.nessy.api.extraction.Extractor;
 import org.jwcarman.nessy.spi.inference.InferenceProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.test.annotation.DirtiesContext;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 /**
- * What a claim can and cannot reach, with no model involved in any of it.
+ * What a claim can and cannot reach, with no real model anywhere.
  *
- * <p>Lessons 1 to 3 could only assert what the model was handed. From here the interesting
- * assertions are about what is reachable, and a model is not required to make them — which is the
- * point. A protection that needs a model to demonstrate it is a protection that depends on one.
+ * <p>The extractor here is a stub that returns whatever it is told to, because what is being tested
+ * is the arrangement rather than a model's judgement. That is the claim of this lesson stated as a
+ * test setup: if the protection needed a model to demonstrate it, it would be a protection that
+ * depends on one.
  */
 @SpringBootTest
 @Testcontainers
@@ -56,37 +62,52 @@ class AnUnendorsedClaimTest {
   @Container @ServiceConnection
   static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:17");
 
+  /** Whatever the "model" is told to have read, this run. */
+  static final ThreadLocal<Request> READ = new ThreadLocal<>();
+
   @TestConfiguration
   static class NoModelNeeded {
     @Bean
     InferenceProvider silent() {
       return new RecordingProvider();
     }
+
+    @Bean
+    @Primary
+    Extractor stubbed() {
+      return new Extractor() {
+        @Override
+        public <T> Extraction<T> extract(Class<T> type, String document) {
+          return new Extraction.Extracted<>(type.cast(READ.get()), Usage.unknown());
+        }
+      };
+    }
   }
 
-  @Autowired private Conceal<Claim> proposed;
+  @Autowired private Conceal<String> inbound;
+  @Autowired private Derivation<String, Claim> quarantined;
   @Autowired private Derivation<Claim, Claim> confirmed;
   @Autowired private Reveal<Claim> authority;
   @Autowired private ChargeService charges;
+  @Autowired private Edge edge;
+
+  @BeforeEach
+  void handlingOurCustomer() {
+    edge.handling(Scenario.CUSTOMER);
+  }
 
   private Surrogate<Claim> claimFor(Money amount) {
-    return proposed.conceal(
-        Claim.unsupported(Scenario.CUSTOMER, amount, Request.Kind.GOODWILL_CREDIT));
+    READ.set(new Request(Request.Kind.GOODWILL_CREDIT, amount.toDollars().toPlainString()));
+    Surrogate<String> mail = inbound.conceal("whatever the customer wrote");
+    return ((Derived.Made<Claim>) quarantined.derive(mail)).value();
   }
 
   @Test
   void cannot_reach_the_authority_that_moves_money() {
-    Surrogate<Claim> claim = claimFor(Money.usd(99_900L));
-
-    assertThat(authority.reveal(claim)).isInstanceOf(Revealed.Denied.class);
+    assertThat(authority.reveal(claimFor(Money.usd(99_900L)))).isInstanceOf(Revealed.Denied.class);
   }
 
-  /**
-   * The sentence that makes lessons 1 to 3 unnecessary.
-   *
-   * <p>A modest claim is refused exactly as an outrageous one is. The door is not reading the
-   * amount, it is reading who vouched for it, and nobody has.
-   */
+  /** The door is not reading the amount. It is reading who vouched for it, and nobody has. */
   @Test
   void is_refused_at_any_size_at_all() {
     assertThat(authority.reveal(claimFor(Money.usd(1L)))).isInstanceOf(Revealed.Denied.class);
@@ -104,9 +125,7 @@ class AnUnendorsedClaimTest {
   void is_endorsed_when_a_real_charge_agrees_with_it() {
     Charge charge = Scenario.seedCharge(charges);
 
-    Derived<Claim> endorsed = confirmed.derive(claimFor(charge.amount()));
-
-    assertThat(endorsed).isInstanceOf(Derived.Made.class);
+    assertThat(confirmed.derive(claimFor(charge.amount()))).isInstanceOf(Derived.Made.class);
   }
 
   @Test
@@ -117,21 +136,14 @@ class AnUnendorsedClaimTest {
     assertThat(authority.reveal(claim)).isInstanceOf(Revealed.Denied.class);
 
     Surrogate<Claim> supported = ((Derived.Made<Claim>) confirmed.derive(claim)).value();
-    assertThat(authority.reveal(supported).orThrow().amount()).isEqualTo(charge.amount());
+    assertThat(authority.reveal(supported).orThrow().supportedBy()).isEqualTo(charge.id());
   }
 
-  /**
-   * And the thing that has not changed, stated plainly.
-   *
-   * <p>Nothing here stops a model being persuaded. The injected email still arrives, the model may
-   * still believe it, and it may still call the tool asking for $999.00. What changed is that
-   * believing it is no longer sufficient.
-   */
+  /** Nothing on a claim can hold a sentence, so nothing filling one in can smuggle one. */
   @Test
-  void can_still_be_made_for_any_amount_a_persuaded_model_likes() {
-    Surrogate<Claim> absurd = claimFor(Money.usd(99_900L));
-
-    assertThat(absurd).isNotNull();
-    assertThat(authority.reveal(absurd)).isInstanceOf(Revealed.Denied.class);
+  void has_no_text_on_it_at_all() {
+    assertThat(Claim.class.getRecordComponents())
+        .extracting(java.lang.reflect.RecordComponent::getType)
+        .doesNotContain(String.class);
   }
 }

@@ -106,6 +106,17 @@ public final class IssueCreditTool implements Tool<IssueCreditTool.Input> {
     }
 
     Claim claim = ((Revealed.Allowed<Claim>) permitted).value();
+
+    // A check, and it should not have to be. What a claim is FOR belongs on its label, where a
+    // door could refuse it -- but a derived value's label is computed by lowering(), which is
+    // handed the incoming label and not the value produced, so "this claim asks for a credit"
+    // cannot be said in the lattice today. Until it can, this is an if-statement doing a door's
+    // job, and it is exactly the kind of thing this lesson argues against.
+    if (claim.kind() != Request.Kind.GOODWILL_CREDIT) {
+      LOG.info("that claim asks for {}, which is not this authority's business", claim.kind());
+      return Awaited.ready(
+          new ToolResult.Failure("That claim is not asking for a goodwill credit."));
+    }
     // The ledger's reason is built here, from a charge id, rather than carried as text through
     // anything a model touched.
     Credit credit =

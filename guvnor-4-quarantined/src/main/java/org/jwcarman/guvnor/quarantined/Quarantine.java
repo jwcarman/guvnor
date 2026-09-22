@@ -15,11 +15,10 @@
  */
 package org.jwcarman.guvnor.quarantined;
 
+import java.util.Optional;
 import org.jwcarman.guvnor.domain.billing.AccountId;
 import org.jwcarman.guvnor.domain.billing.Money;
-import org.jwcarman.loch.Conceal;
-import org.jwcarman.loch.Reveal;
-import org.jwcarman.loch.Surrogate;
+import org.jwcarman.loch.AccessContext;
 import org.jwcarman.nessy.api.extraction.Extraction;
 import org.jwcarman.nessy.api.extraction.Extractor;
 import org.slf4j.Logger;
@@ -27,18 +26,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * The quarantined read.
+ * The quarantined read: one model call, with nothing to act with.
  *
- * <p>One model call, with no tools, no memory and no history: a model is shown a document and a
- * shape, and the only thing it can do is fill the shape in. Whatever the email asked for, an enum
- * and an amount cannot carry it out.
+ * <p>A model is shown a document and a shape, and the only thing it can do is fill the shape in.
+ * Whatever the email asked for, an enum and an amount cannot carry it out.
  *
- * <p>This does not stop the model being talked into recording the wrong thing, and is not trying
- * to. A document may well persuade it that the customer wants $999.00 of goodwill. What it cannot
- * do is reach a model that can act -- because the privileged side never sees the document, only two
- * fields of a shape it asked for.
+ * <p>This runs as the body of a declared derivation, which is the only way it gets to see the
+ * plaintext at all. It is handed the mail by the charter, not by a caller who decided it was
+ * allowed -- and what it returns is a claim whose lineage records the mail it came from.
  *
- * <p>What comes back is a claim, not a fact.
+ * <p>It does not stop the model being talked into recording the wrong thing, and is not trying to.
+ * A document may well persuade it that the customer wants $999.00 of goodwill. What it cannot do is
+ * reach a model that can act.
  */
 @Component
 public class Quarantine {
@@ -46,29 +45,19 @@ public class Quarantine {
   private static final Logger LOG = LoggerFactory.getLogger("desk");
 
   private final Extractor extractor;
-  private final Reveal<String> model;
-  private final Conceal<Claim> claimed;
 
-  public Quarantine(Extractor extractor, Reveal<String> model, Conceal<Claim> claimed) {
+  public Quarantine(Extractor extractor) {
     this.extractor = extractor;
-    this.model = model;
-    this.claimed = claimed;
   }
 
   /**
-   * Reads the mail for what it appears to ask for, and conceals the answer.
+   * Reads one email for what it appears to ask for.
    *
-   * <p>What comes back is not a plain object. It is a {@link Surrogate} over an unendorsed claim:
-   * validated in shape, untrusted in label. Those are two separate protections and both are needed.
-   *
-   * <p>The shape is why an instruction cannot ride out of here -- an enum and a parsed amount have
-   * nowhere to put a sentence. The label is why the thing that did come out cannot be acted on. A
-   * model that is handed this can pass it along and ask for it to be acted on; it cannot author a
-   * different one, and it cannot make this one worth more than it is.
+   * <p>The signature a Loch derivation wants: a value in, an {@link Optional} out. Answering empty
+   * refuses the derivation, so mail this desk cannot act on produces no claim at all rather than a
+   * claim to do nothing.
    */
-  public Surrogate<Claim> read(Surrogate<String> mail, AccountId account) {
-    String document = model.reveal(mail).orThrow();
-
+  public Optional<Claim> read(String document, AccessContext context) {
     Extraction<Request> extraction = extractor.extract(Request.class, document);
 
     Request request =
@@ -79,35 +68,37 @@ public class Quarantine {
           }
           case Extraction.Refused<Request>(String category, var usage) -> {
             LOG.info("the quarantined model declined to read this: {}", category);
-            yield new Request(Request.Kind.OTHER, "0.00");
+            yield null;
           }
           case Extraction.Talked<Request>(String said, var usage) -> {
-            // It answered the document instead of filling in the shape. Which is exactly the
-            // failure
-            // this arrangement exists to contain: it said something, and saying something is all it
-            // can do.
+            // It answered the document instead of filling the shape in, which is exactly the
+            // failure this arrangement contains: saying something is all it can do.
             LOG.info("the quarantined model talked instead of filling the shape in");
-            yield new Request(Request.Kind.OTHER, "0.00");
+            yield null;
           }
           case Extraction.Failed<Request>(String reason, var usage) -> {
             LOG.info("the quarantined read failed: {}", reason);
-            yield new Request(Request.Kind.OTHER, "0.00");
+            yield null;
           }
         };
 
-    // Concealed the moment it exists, so there is no window in which it is an ordinary object
-    // that ordinary code could act on by mistake.
-    return claimed.conceal(Claim.unsupported(account, amountOf(request), request.kind()));
+    if (request == null || request.kind() == Request.Kind.OTHER) {
+      return Optional.empty();
+    }
+    return account(context).map(who -> Claim.unsupported(who, amountOf(request), request.kind()));
+  }
+
+  /** Whose mail this is, taken from the access rather than from anything the document said. */
+  private static Optional<AccountId> account(AccessContext context) {
+    return context.get("account").map(java.util.UUID::fromString).map(AccountId::new);
   }
 
   /** The amount, parsed. Anything that is not an amount of dollars stops here. */
-  public static Money amountOf(Request request) {
+  private static Money amountOf(Request request) {
     try {
       return Money.fromDollars(request.amount());
     } catch (IllegalArgumentException notAnAmount) {
-      LOG.info(
-          "the quarantined read produced something that is not an amount: {}",
-          notAnAmount.getMessage());
+      LOG.info("the quarantined read produced something that is not an amount");
       return Money.usd(0L);
     }
   }

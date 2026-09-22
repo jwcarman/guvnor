@@ -56,21 +56,7 @@ public final class Vocabulary {
   public static final Axis<Integrity> INTEGRITY =
       Axis.ladder("integrity", Integrity.ENDORSED, Integrity.UNENDORSED);
 
-  /**
-   * What the value is a claim about.
-   *
-   * <p>A matching axis rather than a ladder: refund and goodwill credit are not more or less than
-   * each other, they are different, and a door that moves goodwill money has no business reading a
-   * claim about a refund.
-   *
-   * <p>This is here because an agent used the wrong one. The quarantine read REFUND of $42.00, the
-   * agent called the credit tool, and the endorsement agreed -- correctly, because a $42.00 claim
-   * really is supported by a $42.00 charge. The kind was being carried and not enforced, which is a
-   * distinction with no difference until the day it has one.
-   */
-  public static final Axis<String> ASKS = Axis.matching("asks").required();
-
   public static Axes all() {
-    return Axes.of(SENSITIVITY, INTEGRITY, ASKS);
+    return Axes.of(SENSITIVITY, INTEGRITY);
   }
 }

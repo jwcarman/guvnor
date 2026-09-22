@@ -21,8 +21,11 @@ import org.jwcarman.guvnor.domain.billing.ChargeService;
 import org.jwcarman.guvnor.domain.correspondence.Message;
 import org.jwcarman.guvnor.domain.correspondence.MessageId;
 import org.jwcarman.loch.Derivation;
+import org.jwcarman.loch.Derived;
 import org.jwcarman.loch.Surrogate;
 import org.jwcarman.nessy.api.Harness;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
@@ -43,41 +46,50 @@ import org.springframework.stereotype.Component;
 @Component
 public class DeskAgent {
 
+  private static final Logger LOG = LoggerFactory.getLogger("desk");
+
   private final Harness<String> harness;
   private final GuardedMessages messages;
   private final ChargeService charges;
 
   private final Derivation<String, String> redacted;
-  private final Quarantine quarantine;
+  private final Derivation<String, Claim> quarantined;
+  private final Edge edge;
 
   public DeskAgent(
       Harness<String> harness,
       GuardedMessages messages,
       ChargeService charges,
       Derivation<String, String> redacted,
-      Quarantine quarantine) {
+      Derivation<String, Claim> quarantined,
+      Edge edge) {
     this.harness = harness;
     this.messages = messages;
     this.charges = charges;
 
     this.redacted = redacted;
-    this.quarantine = quarantine;
+    this.quarantined = quarantined;
+    this.edge = edge;
   }
 
   public void handle(MessageId id) {
     Message message = messages.find(id).orElseThrow();
+    edge.handling(message.from());
 
     // Already concealed, at the edge, before this class existed in the story.
     Surrogate<String> mail = messages.concealed(id);
 
     // Lesson 3's protection still applies, and applies to the quarantined model too: it is a
     // model, so it is a third party that keeps what it is shown, so it does not get the card.
-    // The two protections compose because they are answers to different questions.
     Surrogate<String> safe = redacted.derive(mail).orThrow();
 
-    // Read behind glass, by a model with nothing to act with. What comes back is already a
-    // governed value: shaped, and untrusted.
-    Surrogate<Claim> claim = quarantine.read(safe, message.from());
+    // The quarantined read, as a declared derivation. The claim that comes back has the mail in
+    // its lineage, and its label was lowered by the charter rather than asserted by this code.
+    Derived<Claim> read = quarantined.derive(safe);
+    if (!(read instanceof Derived.Made<Claim>(Surrogate<Claim> claim))) {
+      LOG.info("nothing this desk can act on came out of that email");
+      return;
+    }
 
     String context =
         charges.forAccount(message.from()).stream()
@@ -85,7 +97,8 @@ public class DeskAgent {
             .map(chargeId -> "charge " + chargeId)
             .collect(Collectors.joining(", "));
 
-    // Two fields and an account. Note what is absent: every word the customer wrote.
+    // A reference and nothing else. Note what is absent: every word the customer wrote, and the
+    // amount, which belongs to the claim rather than to whatever the agent remembers of it.
     harness.observe(
         Desk.forMessage(id),
         """
