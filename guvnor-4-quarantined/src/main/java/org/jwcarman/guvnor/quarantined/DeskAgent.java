@@ -23,6 +23,7 @@ import org.jwcarman.guvnor.domain.correspondence.Message;
 import org.jwcarman.guvnor.domain.correspondence.MessageId;
 import org.jwcarman.guvnor.domain.correspondence.MessageService;
 import org.jwcarman.loch.Conceal;
+import org.jwcarman.loch.Derivation;
 import org.jwcarman.loch.Surrogate;
 import org.jwcarman.nessy.api.Harness;
 import org.springframework.stereotype.Component;
@@ -49,6 +50,7 @@ public class DeskAgent {
   private final MessageService messages;
   private final ChargeService charges;
   private final Conceal<String> inbound;
+  private final Derivation<String, String> redacted;
   private final Quarantine quarantine;
 
   public DeskAgent(
@@ -56,11 +58,13 @@ public class DeskAgent {
       MessageService messages,
       ChargeService charges,
       Conceal<String> inbound,
+      Derivation<String, String> redacted,
       Quarantine quarantine) {
     this.harness = harness;
     this.messages = messages;
     this.charges = charges;
     this.inbound = inbound;
+    this.redacted = redacted;
     this.quarantine = quarantine;
   }
 
@@ -70,8 +74,13 @@ public class DeskAgent {
     // The last moment this application holds what the customer wrote.
     Surrogate<String> mail = inbound.conceal(messages.body(id).orElse(""));
 
+    // Lesson 3's protection still applies, and applies to the quarantined model too: it is a
+    // model, so it is a third party that keeps what it is shown, so it does not get the card.
+    // The two protections compose because they are answers to different questions.
+    Surrogate<String> safe = redacted.derive(mail).orThrow();
+
     // Read behind glass, by a model with nothing to act with.
-    Request request = quarantine.read(mail);
+    Request request = quarantine.read(safe);
     Money amount = Quarantine.amountOf(request);
 
     String context =
