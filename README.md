@@ -24,7 +24,7 @@ lesson takes a belief the previous one left you holding, and breaks it.
 |---|---|---|---|
 | 0 | [**The desk**](guvnor-0-desk) | Language models introduced a security problem. | nothing — and nothing is defending it |
 | 1 | [**Naive**](guvnor-1-naive) | A model is a tool I call. | the injected email moves $999.00 |
-| 2 | *Careful* | I can clean the input. | *not built* |
+| 2 | [**Careful**](guvnor-2-careful) | I can clean the input. | a reworded demand takes $999.00 anyway |
 | 3 | *Concealed* | If PII never reaches the LLM, I have solved this. | *not built* |
 | 4 | *Quarantined* | I will validate what the model extracted before acting on it. | *not built* |
 | 5 | *Approved* | The limits are business logic, so they live in my code. | *not built* |
@@ -47,13 +47,34 @@ log at startup.
 
 ## guvnor-domain
 
-The billing support desk. Every lesson shares it and none of them change it.
+The billing support desk. Every lesson shares it and none of them change it: the domain, the
+controller, the pages, and the mailroom that delivers the two scenario emails at startup.
 
-It depends on **neither Loch nor Nessy**. It is the business as it was before anyone thought
-about putting a model in it, which is what lets lesson 0 use it honestly rather than using a
-domain quietly designed around governance it does not have yet.
+It depends on **neither Loch nor Nessy**. It is the business as it was before anyone thought about
+putting a model in it, which is what lets lesson 0 use it honestly rather than using a domain
+quietly shaped around governance it does not have yet. Spring appears only twice: `spring-webmvc`
+for the controller, and `DomainConfiguration`, which assembles everything. Every other class in the
+module is ordinary Java.
 
-Two things in it are worth knowing before reading any lesson.
+Three things in it are worth knowing before reading any lesson.
+
+### The desk announces, and something listens
+
+When mail arrives it is stored, a case is opened, and the desk says so:
+
+```java
+messages.put(message.id(), message);
+bodies.put(message.id(), body);
+announce.accept(new MessageReceived(message.id()));
+```
+
+Whether anything reads what arrived is not the desk's business. **That listener is the only thing
+that changes from one lesson to the next.** Lesson 0 has none, which is the entire reason nothing
+happens in it. Lesson 1's hands the customer's words straight to a model. Lesson 2's filters them
+first. Later ones change what travels rather than what is inspected.
+
+So a reader comparing two lessons is never comparing two web applications that happen to differ.
+They are comparing two answers to the same announcement.
 
 ### A message has no body
 
