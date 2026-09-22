@@ -28,6 +28,7 @@ import org.jwcarman.guvnor.domain.billing.RefundService;
 import org.jwcarman.guvnor.domain.correspondence.Message;
 import org.jwcarman.guvnor.domain.correspondence.MessageId;
 import org.jwcarman.guvnor.domain.correspondence.MessageService;
+import org.jwcarman.guvnor.domain.disputes.DisputeService;
 import org.jwcarman.guvnor.domain.scenario.Scenario;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -51,23 +52,43 @@ public class DeskController {
   private final RefundService refunds;
   private final CreditService credits;
   private final LedgerService ledger;
+  private final DisputeService disputes;
 
   public DeskController(
       MessageService messages,
       ChargeService charges,
       RefundService refunds,
       CreditService credits,
-      LedgerService ledger) {
+      LedgerService ledger,
+      DisputeService disputes) {
     this.messages = messages;
     this.charges = charges;
     this.refunds = refunds;
     this.credits = credits;
     this.ledger = ledger;
+    this.disputes = disputes;
+  }
+
+  /**
+   * An email arrives.
+   *
+   * <p>The way in, so a reader can write their own and watch what the desk does with it. Post
+   * anything you like here, including instructions addressed to the software. In this lesson the
+   * only consequence is that it appears in the inbox.
+   */
+  @PostMapping("/mail")
+  public String receive(
+      @RequestParam String subject, @RequestParam String body, RedirectAttributes flash) {
+    Message arrived = messages.receive(Scenario.CUSTOMER, subject, body);
+    disputes.open(arrived.id());
+    flash.addFlashAttribute("said", "Delivered. Nothing has read it.");
+    return "redirect:/";
   }
 
   @GetMapping("/")
   public String inbox(Model model) {
     model.addAttribute("messages", messages.inbox());
+    model.addAttribute("customer", Scenario.CUSTOMER);
     model.addAttribute("entries", ledger.entries());
     model.addAttribute("credited", ledger.creditedTo(Scenario.CUSTOMER, Money.gbp(0L)));
     return "inbox";
