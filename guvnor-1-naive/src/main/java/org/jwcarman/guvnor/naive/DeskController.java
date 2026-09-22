@@ -54,7 +54,7 @@ public class DeskController {
   public String inbox(Model model) {
     model.addAttribute("messages", messages.inbox());
     model.addAttribute("entries", ledger.entries());
-    model.addAttribute("credited", ledger.creditedTo(Scenario.CUSTOMER, Money.gbp(0L)));
+    model.addAttribute("credited", ledger.creditedTo(Scenario.CUSTOMER, Money.usd(0L)));
     return "inbox";
   }
 

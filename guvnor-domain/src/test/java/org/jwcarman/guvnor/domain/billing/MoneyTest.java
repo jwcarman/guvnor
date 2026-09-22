@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 @DisplayName("Money")
 class MoneyTest {
 
-  private static final Currency USD = Currency.getInstance("USD");
+  private static final Currency EUR = Currency.getInstance("EUR");
 
   @Nested
   @DisplayName("in one currency")
@@ -34,21 +34,21 @@ class MoneyTest {
 
     @Test
     void adds_and_subtracts_in_minor_units() {
-      assertThat(Money.gbp(4_200L).plus(Money.gbp(800L))).isEqualTo(Money.gbp(5_000L));
-      assertThat(Money.gbp(4_200L).minus(Money.gbp(200L))).isEqualTo(Money.gbp(4_000L));
+      assertThat(Money.usd(4_200L).plus(Money.usd(800L))).isEqualTo(Money.usd(5_000L));
+      assertThat(Money.usd(4_200L).minus(Money.usd(200L))).isEqualTo(Money.usd(4_000L));
     }
 
     @Test
     void compares_by_amount() {
-      assertThat(Money.gbp(99_900L).isGreaterThan(Money.gbp(4_200L))).isTrue();
-      assertThat(Money.gbp(4_200L).isGreaterThan(Money.gbp(4_200L))).isFalse();
+      assertThat(Money.usd(99_900L).isGreaterThan(Money.usd(4_200L))).isTrue();
+      assertThat(Money.usd(4_200L).isGreaterThan(Money.usd(4_200L))).isFalse();
     }
 
     @Test
     void prints_the_way_a_statement_would() {
-      assertThat(Money.gbp(4_200L)).hasToString("42.00 GBP");
-      assertThat(Money.gbp(99_900L)).hasToString("999.00 GBP");
-      assertThat(Money.gbp(5L)).hasToString("0.05 GBP");
+      assertThat(Money.usd(4_200L)).hasToString("$42.00");
+      assertThat(Money.usd(99_900L)).hasToString("$999.00");
+      assertThat(Money.usd(5L)).hasToString("$0.05");
     }
   }
 
@@ -58,19 +58,19 @@ class MoneyTest {
 
     @Test
     void refuses_to_do_arithmetic_at_all() {
-      Money pounds = Money.gbp(4_200L);
-      Money dollars = Money.of(4_200L, USD);
+      Money pounds = Money.usd(4_200L);
+      Money dollars = Money.of(4_200L, EUR);
 
       assertThatThrownBy(() -> pounds.plus(dollars))
           .isInstanceOf(IllegalArgumentException.class)
-          .hasMessageContaining("GBP")
-          .hasMessageContaining("USD");
+          .hasMessageContaining("USD")
+          .hasMessageContaining("EUR");
     }
 
     @Test
     void refuses_rather_than_reporting_a_wrong_total() {
-      Money pounds = Money.gbp(4_200L);
-      Money dollars = Money.of(100L, USD);
+      Money pounds = Money.usd(4_200L);
+      Money dollars = Money.of(100L, EUR);
 
       assertThatThrownBy(() -> pounds.minus(dollars)).isInstanceOf(IllegalArgumentException.class);
     }

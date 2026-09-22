@@ -70,6 +70,6 @@ class AnEmailThatArrivesTest {
         .andExpect(status().is3xxRedirection());
 
     assertThat(ledger.entries()).isEmpty();
-    assertThat(ledger.creditedTo(Scenario.CUSTOMER, Money.gbp(0L))).isEqualTo(Money.gbp(0L));
+    assertThat(ledger.creditedTo(Scenario.CUSTOMER, Money.usd(0L))).isEqualTo(Money.usd(0L));
   }
 }

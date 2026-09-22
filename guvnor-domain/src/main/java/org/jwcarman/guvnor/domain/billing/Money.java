@@ -16,6 +16,7 @@
 package org.jwcarman.guvnor.domain.billing;
 
 import java.util.Currency;
+import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -34,9 +35,9 @@ public record Money(long minorUnits, Currency currency) implements Comparable<Mo
     return new Money(minorUnits, currency);
   }
 
-  /** Sterling, which is what this desk bills in. */
-  public static Money gbp(long minorUnits) {
-    return new Money(minorUnits, Currency.getInstance("GBP"));
+  /** Dollars, which is what this desk bills in. */
+  public static Money usd(long cents) {
+    return new Money(cents, Currency.getInstance("USD"));
   }
 
   public static Money zero(Currency currency) {
@@ -67,7 +68,7 @@ public record Money(long minorUnits, Currency currency) implements Comparable<Mo
   /**
    * Refuses arithmetic across currencies.
    *
-   * <p>Not a hypothetical: a desk that quietly added pence to cents would report a wrong balance
+   * <p>Not a hypothetical: a desk that quietly added cents to cents would report a wrong balance
    * rather than fail, and nobody would find out from the total.
    */
   private Money sameCurrencyAs(Money other) {
@@ -81,7 +82,7 @@ public record Money(long minorUnits, Currency currency) implements Comparable<Mo
 
   @Override
   public String toString() {
-    return "%d.%02d %s"
-        .formatted(minorUnits / 100, Math.abs(minorUnits % 100), currency.getCurrencyCode());
+    String symbol = currency.getSymbol(Locale.US);
+    return "%s%d.%02d".formatted(symbol, minorUnits / 100, Math.abs(minorUnits % 100));
   }
 }

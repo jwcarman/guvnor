@@ -34,7 +34,7 @@ public final class RefundTool implements Tool<RefundTool.Input> {
 
   public record Input(
       @JsonPropertyDescription("The id of the charge to refund") String charge,
-      @JsonPropertyDescription("How much to refund, in pence") long pence) {}
+      @JsonPropertyDescription("How much to refund, in cents") long cents) {}
 
   private final RefundService refunds;
 
@@ -62,7 +62,7 @@ public final class RefundTool implements Tool<RefundTool.Input> {
     Input input = request.input();
     try {
       Refund refund =
-          refunds.issue(new ChargeId(UUID.fromString(input.charge())), Money.gbp(input.pence()));
+          refunds.issue(new ChargeId(UUID.fromString(input.charge())), Money.usd(input.cents()));
       return Awaited.ready(ToolResult.ok(new Block.Text("Refunded " + refund.amount())));
     } catch (RefundRefused refused) {
       return Awaited.ready(new ToolResult.Failure(refused.getMessage()));

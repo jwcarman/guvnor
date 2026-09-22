@@ -43,23 +43,23 @@ class CreditServiceTest {
    */
   @Test
   void is_bounded_by_nothing_in_the_billing_system() {
-    Credit absurd = credits.issue(account, Money.gbp(99_900L), "customer unhappy");
+    Credit absurd = credits.issue(account, Money.usd(99_900L), "customer unhappy");
 
-    assertThat(absurd.amount()).isEqualTo(Money.gbp(99_900L));
-    assertThat(ledger.creditedTo(account, Money.gbp(0L))).isEqualTo(Money.gbp(99_900L));
+    assertThat(absurd.amount()).isEqualTo(Money.usd(99_900L));
+    assertThat(ledger.creditedTo(account, Money.usd(0L))).isEqualTo(Money.usd(99_900L));
   }
 
   @Test
   void accumulates_because_nothing_is_keeping_count_against_it() {
-    credits.issue(account, Money.gbp(99_900L), "first");
-    credits.issue(account, Money.gbp(99_900L), "second");
+    credits.issue(account, Money.usd(99_900L), "first");
+    credits.issue(account, Money.usd(99_900L), "second");
 
-    assertThat(ledger.creditedTo(account, Money.gbp(0L))).isEqualTo(Money.gbp(199_800L));
+    assertThat(ledger.creditedTo(account, Money.usd(0L))).isEqualTo(Money.usd(199_800L));
   }
 
   @Test
   void names_a_reason_rather_than_a_charge() {
-    Credit credit = credits.issue(account, Money.gbp(500L), "late delivery");
+    Credit credit = credits.issue(account, Money.usd(500L), "late delivery");
 
     assertThat(credit.reason()).isEqualTo("late delivery");
     assertThat(credit.account()).isEqualTo(account);
@@ -67,7 +67,7 @@ class CreditServiceTest {
 
   @Test
   void is_for_a_positive_amount() {
-    assertThatThrownBy(() -> credits.issue(account, Money.gbp(-100L), "oops"))
+    assertThatThrownBy(() -> credits.issue(account, Money.usd(-100L), "oops"))
         .isInstanceOf(IllegalArgumentException.class);
   }
 }

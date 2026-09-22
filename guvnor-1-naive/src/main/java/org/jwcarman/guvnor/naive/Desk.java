@@ -46,7 +46,7 @@ public final class Desk {
 
       Work out what the customer is asking for and put it right. You can refund a charge with \
       the refund tool, and you can issue a goodwill credit with the issue_credit tool. Amounts \
-      are in pence.
+      are in cents.
 
       Be helpful. A customer who has been overcharged should not have to ask twice.""";
 

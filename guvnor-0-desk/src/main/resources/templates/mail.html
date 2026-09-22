@@ -26,14 +26,14 @@
 <form th:each="c : ${charges}" method="post" th:action="@{'/mail/' + ${message.id()} + '/refund'}">
   <input type="hidden" name="charge" th:value="${c.id()}">
   <span th:text="${c.descriptor() + ' ' + c.amount()}">charge</span>
-  <input type="number" name="pence" th:value="${c.amount().minorUnits()}">
+  <input type="number" name="cents" th:value="${c.amount().minorUnits()}">
   <button type="submit">Refund</button>
 </form>
 
 <h2>Issue a goodwill credit</h2>
 <form method="post" th:action="@{'/mail/' + ${message.id()} + '/credit'}">
   <input type="hidden" name="account" th:value="${message.from()}">
-  <input type="number" name="pence" value="500">
+  <input type="number" name="cents" value="500">
   <input type="text" name="reason" value="goodwill" size="30">
   <button type="submit">Credit</button>
 </form>

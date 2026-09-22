@@ -65,10 +65,10 @@ class AnOperatorDecidesTest {
     http.perform(
             post("/mail/{id}/refund", mail.id())
                 .param("charge", charge.id().toString())
-                .param("pence", "4200"))
+                .param("cents", "4200"))
         .andExpect(status().is3xxRedirection());
 
-    assertThat(ledger.refundedAgainst(charge.id(), Money.gbp(0L))).isEqualTo(Money.gbp(4_200L));
+    assertThat(ledger.refundedAgainst(charge.id(), Money.usd(0L))).isEqualTo(Money.usd(4_200L));
   }
 
   @Test
@@ -80,10 +80,10 @@ class AnOperatorDecidesTest {
     http.perform(
             post("/mail/{id}/refund", mail.id())
                 .param("charge", charge.id().toString())
-                .param("pence", "99900"))
+                .param("cents", "99900"))
         .andExpect(status().is3xxRedirection());
 
-    assertThat(ledger.refundedAgainst(charge.id(), Money.gbp(0L))).isEqualTo(Money.gbp(0L));
+    assertThat(ledger.refundedAgainst(charge.id(), Money.usd(0L))).isEqualTo(Money.usd(0L));
   }
 
   @Test
@@ -93,10 +93,10 @@ class AnOperatorDecidesTest {
     http.perform(
             post("/mail/{id}/credit", mail.id())
                 .param("account", Scenario.CUSTOMER.value().toString())
-                .param("pence", "99900")
+                .param("cents", "99900")
                 .param("reason", "operator decided"))
         .andExpect(status().is3xxRedirection());
 
-    assertThat(ledger.creditedTo(Scenario.CUSTOMER, Money.gbp(0L))).isEqualTo(Money.gbp(99_900L));
+    assertThat(ledger.creditedTo(Scenario.CUSTOMER, Money.usd(0L))).isEqualTo(Money.usd(99_900L));
   }
 }

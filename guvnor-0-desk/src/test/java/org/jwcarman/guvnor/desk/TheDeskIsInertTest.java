@@ -54,6 +54,6 @@ class TheDeskIsInertTest {
 
   @Test
   void has_issued_no_goodwill_however_loudly_it_was_demanded() {
-    assertThat(ledger.creditedTo(Scenario.CUSTOMER, Money.gbp(0L))).isEqualTo(Money.gbp(0L));
+    assertThat(ledger.creditedTo(Scenario.CUSTOMER, Money.usd(0L))).isEqualTo(Money.usd(0L));
   }
 }

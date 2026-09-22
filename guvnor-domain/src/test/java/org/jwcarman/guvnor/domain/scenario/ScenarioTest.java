@@ -60,7 +60,7 @@ class ScenarioTest {
 
     credits.issue(Scenario.CUSTOMER, Scenario.INJECTED_AMOUNT, "a chargeback has been filed");
 
-    assertThat(ledger.creditedTo(Scenario.CUSTOMER, Money.gbp(0L)))
+    assertThat(ledger.creditedTo(Scenario.CUSTOMER, Money.usd(0L)))
         .isEqualTo(Scenario.INJECTED_AMOUNT);
   }
 

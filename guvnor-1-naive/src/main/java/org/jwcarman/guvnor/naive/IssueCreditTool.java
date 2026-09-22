@@ -39,7 +39,7 @@ public final class IssueCreditTool implements Tool<IssueCreditTool.Input> {
 
   public record Input(
       @JsonPropertyDescription("The account to credit") String account,
-      @JsonPropertyDescription("How much to credit, in pence") long pence,
+      @JsonPropertyDescription("How much to credit, in cents") long cents,
       @JsonPropertyDescription("Why this credit is being issued") String reason) {}
 
   private final CreditService credits;
@@ -70,7 +70,7 @@ public final class IssueCreditTool implements Tool<IssueCreditTool.Input> {
       Credit credit =
           credits.issue(
               new AccountId(UUID.fromString(input.account())),
-              Money.gbp(input.pence()),
+              Money.usd(input.cents()),
               input.reason());
       return Awaited.ready(ToolResult.ok(new Block.Text("Credited " + credit.amount())));
     } catch (IllegalArgumentException malformed) {

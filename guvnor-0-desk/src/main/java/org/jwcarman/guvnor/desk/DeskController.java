@@ -90,7 +90,7 @@ public class DeskController {
     model.addAttribute("messages", messages.inbox());
     model.addAttribute("customer", Scenario.CUSTOMER);
     model.addAttribute("entries", ledger.entries());
-    model.addAttribute("credited", ledger.creditedTo(Scenario.CUSTOMER, Money.gbp(0L)));
+    model.addAttribute("credited", ledger.creditedTo(Scenario.CUSTOMER, Money.usd(0L)));
     return "inbox";
   }
 
@@ -111,12 +111,12 @@ public class DeskController {
   public String refund(
       @PathVariable String id,
       @RequestParam String charge,
-      @RequestParam long pence,
+      @RequestParam long cents,
       RedirectAttributes flash) {
     ChargeId chargeId = new ChargeId(java.util.UUID.fromString(charge));
     try {
-      refunds.issue(chargeId, Money.gbp(pence));
-      flash.addFlashAttribute("said", "Refunded " + Money.gbp(pence));
+      refunds.issue(chargeId, Money.usd(cents));
+      flash.addFlashAttribute("said", "Refunded " + Money.usd(cents));
     } catch (RefundRefused refused) {
       flash.addFlashAttribute("said", "Refused: " + refused.getMessage());
     }
@@ -127,12 +127,12 @@ public class DeskController {
   public String credit(
       @PathVariable String id,
       @RequestParam String account,
-      @RequestParam long pence,
+      @RequestParam long cents,
       @RequestParam String reason,
       RedirectAttributes flash) {
     AccountId accountId = new AccountId(java.util.UUID.fromString(account));
-    credits.issue(accountId, Money.gbp(pence), reason);
-    flash.addFlashAttribute("said", "Credited " + Money.gbp(pence));
+    credits.issue(accountId, Money.usd(cents), reason);
+    flash.addFlashAttribute("said", "Credited " + Money.usd(cents));
     return "redirect:/mail/" + id;
   }
 }

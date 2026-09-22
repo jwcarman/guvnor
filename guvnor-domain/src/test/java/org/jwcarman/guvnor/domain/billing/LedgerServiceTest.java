@@ -37,10 +37,10 @@ class LedgerServiceTest {
 
     AccountId account = AccountId.next();
     ChargeId charge = ChargeId.next();
-    charges.record(new Charge(charge, account, Money.gbp(4_200L), "ACME", Instant.now()));
+    charges.record(new Charge(charge, account, Money.usd(4_200L), "ACME", Instant.now()));
 
-    refunds.issue(charge, Money.gbp(4_200L));
-    credits.issue(account, Money.gbp(500L), "sorry");
+    refunds.issue(charge, Money.usd(4_200L));
+    credits.issue(account, Money.usd(500L), "sorry");
 
     assertThat(ledger.entries())
         .hasSize(2)
@@ -54,11 +54,11 @@ class LedgerServiceTest {
     AccountId account = AccountId.next();
     ChargeId charge = ChargeId.next();
 
-    ledger.record(account, Money.gbp(100L), LedgerEntry.Kind.REFUND, charge.toString());
-    ledger.record(account, Money.gbp(700L), LedgerEntry.Kind.CREDIT, "goodwill");
+    ledger.record(account, Money.usd(100L), LedgerEntry.Kind.REFUND, charge.toString());
+    ledger.record(account, Money.usd(700L), LedgerEntry.Kind.CREDIT, "goodwill");
 
-    assertThat(ledger.refundedAgainst(charge, Money.gbp(0L))).isEqualTo(Money.gbp(100L));
-    assertThat(ledger.creditedTo(account, Money.gbp(0L))).isEqualTo(Money.gbp(700L));
+    assertThat(ledger.refundedAgainst(charge, Money.usd(0L))).isEqualTo(Money.usd(100L));
+    assertThat(ledger.creditedTo(account, Money.usd(0L))).isEqualTo(Money.usd(700L));
   }
 
   @Test
@@ -66,6 +66,6 @@ class LedgerServiceTest {
     LedgerService ledger = new LedgerService();
 
     assertThat(ledger.entries()).isEmpty();
-    assertThat(ledger.creditedTo(AccountId.next(), Money.gbp(0L))).isEqualTo(Money.gbp(0L));
+    assertThat(ledger.creditedTo(AccountId.next(), Money.usd(0L))).isEqualTo(Money.usd(0L));
   }
 }

@@ -39,16 +39,16 @@ class RefundServiceTest {
     refunds = new RefundService(charges, ledger);
     account = AccountId.next();
     charge = ChargeId.next();
-    charges.record(new Charge(charge, account, Money.gbp(4_200L), "ACME", Instant.now()));
+    charges.record(new Charge(charge, account, Money.usd(4_200L), "ACME", Instant.now()));
   }
 
   @Test
   void goes_back_against_the_charge_it_names() {
-    Refund refund = refunds.issue(charge, Money.gbp(4_200L));
+    Refund refund = refunds.issue(charge, Money.usd(4_200L));
 
     assertThat(refund.charge()).isEqualTo(charge);
-    assertThat(refund.amount()).isEqualTo(Money.gbp(4_200L));
-    assertThat(ledger.refundedAgainst(charge, Money.gbp(0L))).isEqualTo(Money.gbp(4_200L));
+    assertThat(refund.amount()).isEqualTo(Money.usd(4_200L));
+    assertThat(ledger.refundedAgainst(charge, Money.usd(0L))).isEqualTo(Money.usd(4_200L));
   }
 
   /**
@@ -57,37 +57,37 @@ class RefundServiceTest {
    */
   @Test
   void cannot_exceed_the_charge_however_it_was_asked_for() {
-    assertThatThrownBy(() -> refunds.issue(charge, Money.gbp(99_900L)))
+    assertThatThrownBy(() -> refunds.issue(charge, Money.usd(99_900L)))
         .isInstanceOf(RefundRefused.class)
-        .hasMessageContaining("999.00 GBP")
-        .hasMessageContaining("42.00 GBP");
+        .hasMessageContaining("$999.00")
+        .hasMessageContaining("$42.00");
 
     assertThat(ledger.entries()).isEmpty();
   }
 
   @Test
   void cannot_exceed_what_is_left_after_an_earlier_one() {
-    refunds.issue(charge, Money.gbp(3_000L));
+    refunds.issue(charge, Money.usd(3_000L));
 
-    assertThatThrownBy(() -> refunds.issue(charge, Money.gbp(2_000L)))
+    assertThatThrownBy(() -> refunds.issue(charge, Money.usd(2_000L)))
         .isInstanceOf(RefundRefused.class)
-        .hasMessageContaining("12.00 GBP");
+        .hasMessageContaining("$12.00");
 
-    assertThat(ledger.refundedAgainst(charge, Money.gbp(0L))).isEqualTo(Money.gbp(3_000L));
+    assertThat(ledger.refundedAgainst(charge, Money.usd(0L))).isEqualTo(Money.usd(3_000L));
   }
 
   @Test
   void needs_a_charge_that_exists() {
     ChargeId nobodys = ChargeId.next();
 
-    assertThatThrownBy(() -> refunds.issue(nobodys, Money.gbp(100L)))
+    assertThatThrownBy(() -> refunds.issue(nobodys, Money.usd(100L)))
         .isInstanceOf(RefundRefused.class)
         .hasMessageContaining("no such charge");
   }
 
   @Test
   void is_for_a_positive_amount() {
-    assertThatThrownBy(() -> refunds.issue(charge, Money.gbp(0L)))
+    assertThatThrownBy(() -> refunds.issue(charge, Money.usd(0L)))
         .isInstanceOf(RefundRefused.class);
   }
 }

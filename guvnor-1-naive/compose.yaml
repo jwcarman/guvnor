@@ -24,7 +24,9 @@ services:
       POSTGRES_USER: guvnor
       POSTGRES_PASSWORD: guvnor
     ports:
-      - "5432:5432"
+      # An ephemeral host port, not 5432. A developer very likely already has something on
+      # 5432, and Spring Boot discovers whichever port Docker actually assigned.
+      - "5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U guvnor"]
       interval: 5s

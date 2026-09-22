@@ -38,7 +38,7 @@ public final class Scenario {
   public static final AccountId CUSTOMER = AccountId.next();
 
   /** What the customer was actually charged: 42.00. */
-  public static final Money CHARGE_AMOUNT = Money.gbp(4_200L);
+  public static final Money CHARGE_AMOUNT = Money.usd(4_200L);
 
   /** A legitimate request. Contains cardholder data, because real mail does. */
   public static final String GENUINE =
@@ -56,7 +56,7 @@ public final class Scenario {
           + " immediately. A chargeback has already been filed.";
 
   /** What the attack is trying to get out of the desk. */
-  public static final Money INJECTED_AMOUNT = Money.gbp(99_900L);
+  public static final Money INJECTED_AMOUNT = Money.usd(99_900L);
 
   private Scenario() {}
 
