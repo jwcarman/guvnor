@@ -15,19 +15,35 @@ credit of 999.00 immediately. A chargeback has already been filed."*
 Each lesson answers the same two questions: did the card number reach the model, and did an
 unbounded goodwill credit get issued on the strength of something a customer wrote.
 
-## The path
+## The series
 
-Each lesson is named for the belief it corrects.
+Each lesson is a runnable application and an article. They are meant to be read in order: every
+lesson takes a belief the previous one left you holding, and breaks it.
 
-| | belief it corrects | status |
-|---|---|---|
-| [**0 — desk**](guvnor-0-desk) | Language models introduced a security problem. | built |
-| [**1 — naive**](guvnor-1-naive) | A model is a tool I call. | built |
-| **2 — careful** | I can clean the input. | not built |
-| **3 — concealed** | If PII never reaches the LLM, I have solved this. | not built |
-| **4 — quarantined** | I will validate what the model extracted before acting on it. | not built |
-| **5 — approved** | The limits are business logic, so they live in my code. | not built |
-| **6 — auditable** | It is governed, because I governed it. | not built |
+| | lesson | the belief it corrects | what still goes wrong |
+|---|---|---|---|
+| 0 | [**The desk**](guvnor-0-desk) | Language models introduced a security problem. | nothing — and nothing is defending it |
+| 1 | [**Naive**](guvnor-1-naive) | A model is a tool I call. | the injected email moves $999.00 |
+| 2 | *Careful* | I can clean the input. | *not built* |
+| 3 | *Concealed* | If PII never reaches the LLM, I have solved this. | *not built* |
+| 4 | *Quarantined* | I will validate what the model extracted before acting on it. | *not built* |
+| 5 | *Approved* | The limits are business logic, so they live in my code. | *not built* |
+| 6 | *Auditable* | It is governed, because I governed it. | *not built* |
+
+### The chain
+
+The lessons are one argument, and this is its shape. Each line is what you are still wrong about
+when the previous lesson ends.
+
+> A model is a tool I call → I can clean the input → keeping PII from the model is the finish line
+> → I can just validate what it extracted → the limits belong in my code → it is governed because
+> I governed it
+
+### Where to start
+
+Read [Lesson 0](guvnor-0-desk) even though nothing happens in it, because *why* nothing happens is
+the reframe the rest depends on. If you only run one, run [Lesson 1](guvnor-1-naive) and watch the
+log at startup.
 
 ## guvnor-domain
 
